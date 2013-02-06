@@ -1,0 +1,676 @@
+
+Const GL_DEPTH_BUFFER_BIT              =$00000100
+Const GL_STENCIL_BUFFER_BIT            =$00000400
+Const GL_COLOR_BUFFER_BIT              =$00004000
+
+/* Boolean */
+Const GL_FALSE                         =0
+Const GL_TRUE                          =1
+
+/* BeginMode */
+Const GL_POINTS                        =$0000
+Const GL_LINES                         =$0001
+Const GL_LINE_LOOP                     =$0002
+Const GL_LINE_STRIP                    =$0003
+Const GL_TRIANGLES                     =$0004
+Const GL_TRIANGLE_STRIP                =$0005
+Const GL_TRIANGLE_FAN                  =$0006
+
+/* AlphaFunction */
+Const GL_NEVER                         =$0200
+Const GL_LESS                          =$0201
+Const GL_EQUAL                         =$0202
+Const GL_LEQUAL                        =$0203
+Const GL_GREATER                       =$0204
+Const GL_NOTEQUAL                      =$0205
+Const GL_GEQUAL                        =$0206
+Const GL_ALWAYS                        =$0207
+
+/* BlendingFactorDest */
+Const GL_ZERO                          =0
+Const GL_ONE                           =1
+Const GL_SRC_COLOR                     =$0300
+Const GL_ONE_MINUS_SRC_COLOR           =$0301
+Const GL_SRC_ALPHA                     =$0302
+Const GL_ONE_MINUS_SRC_ALPHA           =$0303
+Const GL_DST_ALPHA                     =$0304
+Const GL_ONE_MINUS_DST_ALPHA           =$0305
+
+/* BlendingFactorSrc */
+/*      GL_ZERO */
+/*      GL_ONE */
+Const GL_DST_COLOR                     =$0306
+Const GL_ONE_MINUS_DST_COLOR           =$0307
+Const GL_SRC_ALPHA_SATURATE            =$0308
+/*      GL_SRC_ALPHA */
+/*      GL_ONE_MINUS_SRC_ALPHA */
+/*      GL_DST_ALPHA */
+/*      GL_ONE_MINUS_DST_ALPHA */
+
+/* ClipPlaneName */
+Const GL_CLIP_PLANE0                   =$3000
+Const GL_CLIP_PLANE1                   =$3001
+Const GL_CLIP_PLANE2                   =$3002
+Const GL_CLIP_PLANE3                   =$3003
+Const GL_CLIP_PLANE4                   =$3004
+Const GL_CLIP_PLANE5                   =$3005
+
+/* ColorMaterialFace */
+/*      GL_FRONT_AND_BACK */
+
+/* ColorMaterialParameter */
+/*      GL_AMBIENT_AND_DIFFUSE */
+
+/* ColorPointerType */
+/*      GL_UNSIGNED_BYTE */
+/*      GL_FLOAT */
+/*      GL_FIXED */
+
+/* CullFaceMode */
+Const GL_FRONT                         =$0404
+Const GL_BACK                          =$0405
+Const GL_FRONT_AND_BACK                =$0408
+
+/* DepthFunction */
+/*      GL_NEVER */
+/*      GL_LESS */
+/*      GL_EQUAL */
+/*      GL_LEQUAL */
+/*      GL_GREATER */
+/*      GL_NOTEQUAL */
+/*      GL_GEQUAL */
+/*      GL_ALWAYS */
+
+/* EnableCap */
+Const GL_FOG                           =$0B60
+Const GL_LIGHTING                      =$0B50
+Const GL_TEXTURE_2D                    =$0DE1
+Const GL_CULL_FACE                     =$0B44
+Const GL_ALPHA_TEST                    =$0BC0
+Const GL_BLEND                         =$0BE2
+Const GL_COLOR_LOGIC_OP                =$0BF2
+Const GL_DITHER                        =$0BD0
+Const GL_STENCIL_TEST                  =$0B90
+Const GL_DEPTH_TEST                    =$0B71
+/*      GL_LIGHT0 */
+/*      GL_LIGHT1 */
+/*      GL_LIGHT2 */
+/*      GL_LIGHT3 */
+/*      GL_LIGHT4 */
+/*      GL_LIGHT5 */
+/*      GL_LIGHT6 */
+/*      GL_LIGHT7 */
+Const GL_POINT_SMOOTH                  =$0B10
+Const GL_LINE_SMOOTH                   =$0B20
+Const GL_COLOR_MATERIAL                =$0B57
+Const GL_NORMALIZE                     =$0BA1
+Const GL_RESCALE_NORMAL                =$803A
+Const GL_VERTEX_ARRAY                  =$8074
+Const GL_NORMAL_ARRAY                  =$8075
+Const GL_COLOR_ARRAY                   =$8076
+Const GL_TEXTURE_COORD_ARRAY           =$8078
+Const GL_MULTISAMPLE                   =$809D
+Const GL_SAMPLE_ALPHA_TO_COVERAGE      =$809E
+Const GL_SAMPLE_ALPHA_TO_ONE           =$809F
+Const GL_SAMPLE_COVERAGE               =$80A0
+
+/* ErrorCode */
+Const GL_NO_ERROR                      =0
+Const GL_INVALID_ENUM                  =$0500
+Const GL_INVALID_VALUE                 =$0501
+Const GL_INVALID_OPERATION             =$0502
+Const GL_STACK_OVERFLOW                =$0503
+Const GL_STACK_UNDERFLOW               =$0504
+Const GL_OUT_OF_MEMORY                 =$0505
+
+/* FogMode */
+/*      GL_LINEAR */
+Const GL_EXP                           =$0800
+Const GL_EXP2                          =$0801
+
+/* FogParameter */
+Const GL_FOG_DENSITY                   =$0B62
+Const GL_FOG_START                     =$0B63
+Const GL_FOG_END                       =$0B64
+Const GL_FOG_MODE                      =$0B65
+Const GL_FOG_COLOR                     =$0B66
+
+/* FrontFaceDirection */
+Const GL_CW                            =$0900
+Const GL_CCW                           =$0901
+
+/* GetPName */
+Const GL_CURRENT_COLOR                 =$0B00
+Const GL_CURRENT_NORMAL                =$0B02
+Const GL_CURRENT_TEXTURE_COORDS        =$0B03
+Const GL_POINT_SIZE                    =$0B11
+Const GL_POINT_SIZE_MIN                =$8126
+Const GL_POINT_SIZE_MAX                =$8127
+Const GL_POINT_FADE_THRESHOLD_SIZE     =$8128
+Const GL_POINT_DISTANCE_ATTENUATION    =$8129
+Const GL_SMOOTH_POINT_SIZE_RANGE       =$0B12
+Const GL_LINE_WIDTH                    =$0B21
+Const GL_SMOOTH_LINE_WIDTH_RANGE       =$0B22
+Const GL_ALIASED_POINT_SIZE_RANGE      =$846D
+Const GL_ALIASED_LINE_WIDTH_RANGE      =$846E
+Const GL_CULL_FACE_MODE                =$0B45
+Const GL_FRONT_FACE                    =$0B46
+Const GL_SHADE_MODEL                   =$0B54
+Const GL_DEPTH_RANGE                   =$0B70
+Const GL_DEPTH_WRITEMASK               =$0B72
+Const GL_DEPTH_CLEAR_VALUE             =$0B73
+Const GL_DEPTH_FUNC                    =$0B74
+Const GL_STENCIL_CLEAR_VALUE           =$0B91
+Const GL_STENCIL_FUNC                  =$0B92
+Const GL_STENCIL_VALUE_MASK            =$0B93
+Const GL_STENCIL_FAIL                  =$0B94
+Const GL_STENCIL_PASS_DEPTH_FAIL       =$0B95
+Const GL_STENCIL_PASS_DEPTH_PASS       =$0B96
+Const GL_STENCIL_REF                   =$0B97
+Const GL_STENCIL_WRITEMASK             =$0B98
+Const GL_MATRIX_MODE                   =$0BA0
+Const GL_VIEWPORT                      =$0BA2
+Const GL_MODELVIEW_STACK_DEPTH         =$0BA3
+Const GL_PROJECTION_STACK_DEPTH        =$0BA4
+Const GL_TEXTURE_STACK_DEPTH           =$0BA5
+Const GL_MODELVIEW_MATRIX              =$0BA6
+Const GL_PROJECTION_MATRIX             =$0BA7
+Const GL_TEXTURE_MATRIX                =$0BA8
+Const GL_ALPHA_TEST_FUNC               =$0BC1
+Const GL_ALPHA_TEST_REF                =$0BC2
+Const GL_BLEND_DST                     =$0BE0
+Const GL_BLEND_SRC                     =$0BE1
+Const GL_LOGIC_OP_MODE                 =$0BF0
+Const GL_SCISSOR_BOX                   =$0C10
+Const GL_SCISSOR_TEST                  =$0C11
+Const GL_COLOR_CLEAR_VALUE             =$0C22
+Const GL_COLOR_WRITEMASK               =$0C23
+Const GL_MAX_LIGHTS                    =$0D31
+Const GL_MAX_CLIP_PLANES               =$0D32
+Const GL_MAX_TEXTURE_SIZE              =$0D33
+Const GL_MAX_MODELVIEW_STACK_DEPTH     =$0D36
+Const GL_MAX_PROJECTION_STACK_DEPTH    =$0D38
+Const GL_MAX_TEXTURE_STACK_DEPTH       =$0D39
+Const GL_MAX_VIEWPORT_DIMS             =$0D3A
+Const GL_MAX_TEXTURE_UNITS             =$84E2
+Const GL_SUBPIXEL_BITS                 =$0D50
+Const GL_RED_BITS                      =$0D52
+Const GL_GREEN_BITS                    =$0D53
+Const GL_BLUE_BITS                     =$0D54
+Const GL_ALPHA_BITS                    =$0D55
+Const GL_DEPTH_BITS                    =$0D56
+Const GL_STENCIL_BITS                  =$0D57
+Const GL_POLYGON_OFFSET_UNITS          =$2A00
+Const GL_POLYGON_OFFSET_FILL           =$8037
+Const GL_POLYGON_OFFSET_FACTOR         =$8038
+Const GL_TEXTURE_BINDING_2D            =$8069
+Const GL_VERTEX_ARRAY_SIZE             =$807A
+Const GL_VERTEX_ARRAY_TYPE             =$807B
+Const GL_VERTEX_ARRAY_STRIDE           =$807C
+Const GL_NORMAL_ARRAY_TYPE             =$807E
+Const GL_NORMAL_ARRAY_STRIDE           =$807F
+Const GL_COLOR_ARRAY_SIZE              =$8081
+Const GL_COLOR_ARRAY_TYPE              =$8082
+Const GL_COLOR_ARRAY_STRIDE            =$8083
+Const GL_TEXTURE_COORD_ARRAY_SIZE      =$8088
+Const GL_TEXTURE_COORD_ARRAY_TYPE      =$8089
+Const GL_TEXTURE_COORD_ARRAY_STRIDE    =$808A
+Const GL_VERTEX_ARRAY_POINTER          =$808E
+Const GL_NORMAL_ARRAY_POINTER          =$808F
+Const GL_COLOR_ARRAY_POINTER           =$8090
+Const GL_TEXTURE_COORD_ARRAY_POINTER   =$8092
+Const GL_SAMPLE_BUFFERS                =$80A8
+Const GL_SAMPLES                       =$80A9
+Const GL_SAMPLE_COVERAGE_VALUE         =$80AA
+Const GL_SAMPLE_COVERAGE_INVERT        =$80AB
+
+/* GetTextureParameter */
+/*      GL_TEXTURE_MAG_FILTER */
+/*      GL_TEXTURE_MIN_FILTER */
+/*      GL_TEXTURE_WRAP_S */
+/*      GL_TEXTURE_WRAP_T */
+
+Const GL_NUM_COMPRESSED_TEXTURE_FORMATS=$86A2
+Const GL_COMPRESSED_TEXTURE_FORMATS    =$86A3
+
+/* HintMode */
+Const GL_DONT_CARE                     =$1100
+Const GL_FASTEST                       =$1101
+Const GL_NICEST                        =$1102
+
+/* HintTarget */
+Const GL_PERSPECTIVE_CORRECTION_HINT   =$0C50
+Const GL_POINT_SMOOTH_HINT             =$0C51
+Const GL_LINE_SMOOTH_HINT              =$0C52
+Const GL_FOG_HINT                      =$0C54
+Const GL_GENERATE_MIPMAP_HINT          =$8192
+
+/* LightModelParameter */
+Const GL_LIGHT_MODEL_AMBIENT           =$0B53
+Const GL_LIGHT_MODEL_TWO_SIDE          =$0B52
+
+/* LightParameter */
+Const GL_AMBIENT                       =$1200
+Const GL_DIFFUSE                       =$1201
+Const GL_SPECULAR                      =$1202
+Const GL_POSITION                      =$1203
+Const GL_SPOT_DIRECTION                =$1204
+Const GL_SPOT_EXPONENT                 =$1205
+Const GL_SPOT_CUTOFF                   =$1206
+Const GL_CONSTANT_ATTENUATION          =$1207
+Const GL_LINEAR_ATTENUATION            =$1208
+Const GL_QUADRATIC_ATTENUATION         =$1209
+
+/* DataType */
+Const GL_BYTE                          =$1400
+Const GL_UNSIGNED_BYTE                 =$1401
+Const GL_SHORT                         =$1402
+Const GL_UNSIGNED_SHORT                =$1403
+Const GL_FLOAT                         =$1406
+Const GL_FIXED                         =$140C
+
+/* LogicOp */
+Const GL_CLEAR                         =$1500
+Const GL_AND                           =$1501
+Const GL_AND_REVERSE                   =$1502
+Const GL_COPY                          =$1503
+Const GL_AND_INVERTED                  =$1504
+Const GL_NOOP                          =$1505
+Const GL_XOR                           =$1506
+Const GL_OR                            =$1507
+Const GL_NOR                           =$1508
+Const GL_EQUIV                         =$1509
+Const GL_INVERT                        =$150A
+Const GL_OR_REVERSE                    =$150B
+Const GL_COPY_INVERTED                 =$150C
+Const GL_OR_INVERTED                   =$150D
+Const GL_NAND                          =$150E
+Const GL_SET                           =$150F
+
+/* MaterialFace */
+/*      GL_FRONT_AND_BACK */
+
+/* MaterialParameter */
+Const GL_EMISSION                      =$1600
+Const GL_SHININESS                     =$1601
+Const GL_AMBIENT_AND_DIFFUSE           =$1602
+/*      GL_AMBIENT */
+/*      GL_DIFFUSE */
+/*      GL_SPECULAR */
+
+/* MatrixMode */
+Const GL_MODELVIEW                     =$1700
+Const GL_PROJECTION                    =$1701
+Const GL_TEXTURE                       =$1702
+
+/* NormalPointerType */
+/*      GL_BYTE */
+/*      GL_SHORT */
+/*      GL_FLOAT */
+/*      GL_FIXED */
+
+/* PixelFormat */
+Const GL_ALPHA                         =$1906
+Const GL_RGB                           =$1907
+Const GL_RGBA                          =$1908
+Const GL_LUMINANCE                     =$1909
+Const GL_LUMINANCE_ALPHA               =$190A
+
+/* PixelStoreParameter */
+Const GL_UNPACK_ALIGNMENT              =$0CF5
+Const GL_PACK_ALIGNMENT                =$0D05
+
+/* PixelType */
+/*      GL_UNSIGNED_BYTE */
+Const GL_UNSIGNED_SHORT_4_4_4_4        =$8033
+Const GL_UNSIGNED_SHORT_5_5_5_1        =$8034
+Const GL_UNSIGNED_SHORT_5_6_5          =$8363
+
+/* ShadingModel */
+Const GL_FLAT                          =$1D00
+Const GL_SMOOTH                        =$1D01
+
+/* StencilFunction */
+/*      GL_NEVER */
+/*      GL_LESS */
+/*      GL_EQUAL */
+/*      GL_LEQUAL */
+/*      GL_GREATER */
+/*      GL_NOTEQUAL */
+/*      GL_GEQUAL */
+/*      GL_ALWAYS */
+
+/* StencilOp */
+/*      GL_ZERO */
+Const GL_KEEP                          =$1E00
+Const GL_REPLACE                       =$1E01
+Const GL_INCR                          =$1E02
+Const GL_DECR                          =$1E03
+/*      GL_INVERT */
+
+/* StringName */
+Const GL_VENDOR                        =$1F00
+Const GL_RENDERER                      =$1F01
+Const GL_VERSION                       =$1F02
+Const GL_EXTENSIONS                    =$1F03
+
+/* TexCoordPointerType */
+/*      GL_SHORT */
+/*      GL_FLOAT */
+/*      GL_FIXED */
+/*      GL_BYTE */
+
+/* TextureEnvMode */
+Const GL_MODULATE                      =$2100
+Const GL_DECAL                         =$2101
+/*      GL_BLEND */
+Const GL_ADD                           =$0104
+/*      GL_REPLACE */
+
+/* TextureEnvParameter */
+Const GL_TEXTURE_ENV_MODE              =$2200
+Const GL_TEXTURE_ENV_COLOR             =$2201
+
+/* TextureEnvTarget */
+Const GL_TEXTURE_ENV                   =$2300
+
+/* TextureMagFilter */
+Const GL_NEAREST                       =$2600
+Const GL_LINEAR                        =$2601
+
+/* TextureMinFilter */
+/*      GL_NEAREST */
+/*      GL_LINEAR */
+Const GL_NEAREST_MIPMAP_NEAREST        =$2700
+Const GL_LINEAR_MIPMAP_NEAREST         =$2701
+Const GL_NEAREST_MIPMAP_LINEAR         =$2702
+Const GL_LINEAR_MIPMAP_LINEAR          =$2703
+
+/* TextureParameterName */
+Const GL_TEXTURE_MAG_FILTER            =$2800
+Const GL_TEXTURE_MIN_FILTER            =$2801
+Const GL_TEXTURE_WRAP_S                =$2802
+Const GL_TEXTURE_WRAP_T                =$2803
+Const GL_GENERATE_MIPMAP               =$8191
+
+/* TextureTarget */
+/*      GL_TEXTURE_2D */
+
+/* TextureUnit */
+Const GL_TEXTURE0                      =$84C0
+Const GL_TEXTURE1                      =$84C1
+Const GL_TEXTURE2                      =$84C2
+Const GL_TEXTURE3                      =$84C3
+Const GL_TEXTURE4                      =$84C4
+Const GL_TEXTURE5                      =$84C5
+Const GL_TEXTURE6                      =$84C6
+Const GL_TEXTURE7                      =$84C7
+Const GL_TEXTURE8                      =$84C8
+Const GL_TEXTURE9                      =$84C9
+Const GL_TEXTURE10                     =$84CA
+Const GL_TEXTURE11                     =$84CB
+Const GL_TEXTURE12                     =$84CC
+Const GL_TEXTURE13                     =$84CD
+Const GL_TEXTURE14                     =$84CE
+Const GL_TEXTURE15                     =$84CF
+Const GL_TEXTURE16                     =$84D0
+Const GL_TEXTURE17                     =$84D1
+Const GL_TEXTURE18                     =$84D2
+Const GL_TEXTURE19                     =$84D3
+Const GL_TEXTURE20                     =$84D4
+Const GL_TEXTURE21                     =$84D5
+Const GL_TEXTURE22                     =$84D6
+Const GL_TEXTURE23                     =$84D7
+Const GL_TEXTURE24                     =$84D8
+Const GL_TEXTURE25                     =$84D9
+Const GL_TEXTURE26                     =$84DA
+Const GL_TEXTURE27                     =$84DB
+Const GL_TEXTURE28                     =$84DC
+Const GL_TEXTURE29                     =$84DD
+Const GL_TEXTURE30                     =$84DE
+Const GL_TEXTURE31                     =$84DF
+Const GL_ACTIVE_TEXTURE                =$84E0
+Const GL_CLIENT_ACTIVE_TEXTURE         =$84E1
+
+/* TextureWrapMode */
+Const GL_REPEAT                        =$2901
+Const GL_CLAMP_TO_EDGE                 =$812F
+
+/* VertexPointerType */
+/*      GL_SHORT */
+/*      GL_FLOAT */
+/*      GL_FIXED */
+/*      GL_BYTE */
+
+/* LightName */
+Const GL_LIGHT0                        =$4000
+Const GL_LIGHT1                        =$4001
+Const GL_LIGHT2                        =$4002
+Const GL_LIGHT3                        =$4003
+Const GL_LIGHT4                        =$4004
+Const GL_LIGHT5                        =$4005
+Const GL_LIGHT6                        =$4006
+Const GL_LIGHT7                        =$4007
+
+/* Buffer Objects */
+Const GL_ARRAY_BUFFER                  =$8892
+Const GL_ELEMENT_ARRAY_BUFFER          =$8893
+
+Const GL_ARRAY_BUFFER_BINDING              =$8894
+Const GL_ELEMENT_ARRAY_BUFFER_BINDING      =$8895
+Const GL_VERTEX_ARRAY_BUFFER_BINDING       =$8896
+Const GL_NORMAL_ARRAY_BUFFER_BINDING       =$8897
+Const GL_COLOR_ARRAY_BUFFER_BINDING        =$8898
+Const GL_TEXTURE_COORD_ARRAY_BUFFER_BINDING=$889A
+
+Const GL_STATIC_DRAW                   =$88E4
+Const GL_DYNAMIC_DRAW                  =$88E8
+
+Const GL_BUFFER_SIZE                   =$8764
+Const GL_BUFFER_USAGE                  =$8765
+
+/* Texture combine + dot3 */
+Const GL_SUBTRACT                      =$84E7
+Const GL_COMBINE                       =$8570
+Const GL_COMBINE_RGB                   =$8571
+Const GL_COMBINE_ALPHA                 =$8572
+Const GL_RGB_SCALE                     =$8573
+Const GL_ADD_SIGNED                    =$8574
+Const GL_INTERPOLATE                   =$8575
+Const GL_CONSTANT                      =$8576
+Const GL_PRIMARY_COLOR                 =$8577
+Const GL_PREVIOUS                      =$8578
+Const GL_OPERAND0_RGB                  =$8590
+Const GL_OPERAND1_RGB                  =$8591
+Const GL_OPERAND2_RGB                  =$8592
+Const GL_OPERAND0_ALPHA                =$8598
+Const GL_OPERAND1_ALPHA                =$8599
+Const GL_OPERAND2_ALPHA                =$859A
+
+Const GL_ALPHA_SCALE                   =$0D1C
+
+Const GL_SRC0_RGB                      =$8580
+Const GL_SRC1_RGB                      =$8581
+Const GL_SRC2_RGB                      =$8582
+Const GL_SRC0_ALPHA                    =$8588
+Const GL_SRC1_ALPHA                    =$8589
+Const GL_SRC2_ALPHA                    =$858A
+
+Const GL_DOT3_RGB                      =$86AE
+Const GL_DOT3_RGBA                     =$86AF
+
+Function glBindBuffer:Void( target,buffer )
+Function glIsBuffer:Bool( buffer )
+
+Kludge glfw,ios
+
+Function glGenTextures:Void( n,textures[],offset=0 )
+Function glDeleteTextures:Void( n,textures[],offset=0 )
+Function glGenBuffers:Void( n,buffers[],offset=0 )
+Function glDeleteBuffers:Void( n,buffers[],offset=0 )
+Function glClipPlanef:Void( plane,equation#[],offset=0 )
+Function glFogfv:Void( pname,params#[],offset=0 )
+Function glGetBufferParameteriv:Void( target,pname,params[],offset=0 )
+Function glGetClipPlanef:Void( plane,equation#[],offset=0 )
+Function glGetFloatv:Void( pname,params#[],offset=0 )
+Function glGetLightfv:Void( light,pname,params#[],offset=0 )
+Function glGetMaterialfv:Void( face,pname,params#[],offset=0 )
+Function glGetTexEnvfv:Void( env,pname,params#[],offset=0 )
+Function glGetTexParameterfv:Void( target,pname,params#[],offset=0 )
+Function glLightfv:Void( light,pname,params#[],offset=0 )
+Function glLightModelfv:Void( pname,params#[],offset=0 )
+Function glLoadMatrixf:Void( m#[],offset=0 )
+Function glMaterialfv:Void( face,pname,params#[],offset=0 )
+Function glMultMatrixf:Void( m#[],offset=0 )
+Function glTexEnvfv:Void( target,pname,params#[],offset=0 )
+Function glTexParameterfv:Void( target,pname,params#[],offset=0 )
+Function glGetIntegerv:Void( pname,params[],offset=0 )
+
+'***** TODO ***** Function glPointParameterfv:Void( pname,params#[],offset=0 )
+'***** TODO ***** Function glGetBooleanv:Void( pname,params?[],offset=0 )
+'***** TODO ***** glGetPointerv:Void( pname,GLvoid **params )
+
+Function glGetString:String( name )
+Function glGetTexEnviv:Void( env,pname,params[],offset=0 )
+Function glGetTexParameteriv:Void( target,pname,params[],offset=0 )
+Function glTexEnviv:Void( target,pname,params[],offset=0 )
+Function glTexParameteriv:Void( target,pname,params[],offset=0 )
+
+Kludge glfw,android,ios
+
+Function glVertexPointer:Void( size,type,stride,pointer:DataBuffer )
+Function glColorPointer:Void( size,type,stride,pointer:DataBuffer )
+Function glNormalPointer:Void( type,stride,pointer:DataBuffer )
+Function glTexCoordPointer:Void( size,type,stride,pointer:DataBuffer )
+Function glDrawElements:Void( mode,count,type,indices:DataBuffer )
+
+Function glBufferData:Void( target,size,data:DataBuffer,usage )
+Function glBufferSubData:Void( target,offset,size,data:DataBuffer )
+Function glTexImage2D:Void( target,level,internalformat,width,height,border,format,type,pixels:DataBuffer )
+Function glTexSubImage2D:Void( target,level,xoffset,yoffset,width,height,format,type,pixels:DataBuffer )
+Function glCompressedTexImage2D:Void( target,level,internalformat,width,height,border,imageSize,Data:DataBuffer )
+Function glCompressedTexSubImage2D:Void( target,level,xoffset,yoffset,width,height,format,imageSize,data:DataBuffer )
+Function glReadPixels:Void( x,y,width,height,format,type,pixels:DataBuffer )
+
+Kludge glfw,ios
+
+Function glVertexPointer:Void( size,type,stride,offset )
+Function glColorPointer:Void( size,type,stride,offset )
+Function glNormalPointer:Void( type,stride,offset )
+Function glTexCoordPointer:Void( size,type,stride,offset )
+Function glDrawElements:Void( mode,count,type,offset )
+
+Kludge glfw
+
+Function glFrustumf:Void( left#,right#,bottom#,top#,zNear#,zFar# )
+Function glOrthof:Void( left#,right#,bottom#,top#,zNear#,zFar# )
+Function glClearDepthf:Void( depth# )
+Function glDepthRangef:Void( zNear#,zFar# )
+
+Kludge none
+
+'***** Available only in Common profile *****
+'
+Function glAlphaFunc:Void( func,ref# )
+Function glClearColor:Void( red#,green#,blue#,alpha# )
+Function glColor4f:Void( red#,green#,blue#,alpha# )
+Function glFogf:Void( pname,param# )
+Function glLightModelf:Void( pname,param# )
+Function glLightf:Void( light,pname,param# )
+Function glLineWidth:Void( width# )
+Function glMaterialf:Void( face,pname,param# )
+Function glMultiTexCoord4f:Void( target,s#,t#,r#,q# )
+Function glNormal3f:Void( nx#,ny#,nz# )
+Function glPointParameterf:Void( pname,param# )
+Function glPointSize:Void( size# )
+Function glPolygonOffset:Void( factor#,units# )
+Function glRotatef:Void( angle#,x#,y#,z# )
+Function glScalef:Void( x#,y#,z# )
+Function glTexEnvf:Void( target,pname,param# )
+Function glTexParameterf:Void( target,pname,param# )
+Function glTranslatef:Void( x#,y#,z# )
+
+'***** Available in both Common and Common-Lite profiles *****
+'
+Function glActiveTexture:Void( texture )
+Function glBindTexture:Void( target,texture )
+Function glBlendFunc:Void( sfactor,dfactor )
+Function glClear:Void( mask )
+Function glClearStencil:Void( s )
+Function glClientActiveTexture:Void( texture )
+Function glColor4ub:Void( red,green,blue,alpha )
+Function glColorMask:Void( red?,green?,blue?,alpha? )
+Function glCopyTexImage2D:Void( target,level,internalformat,x,y,width,height,border )
+Function glCopyTexSubImage2D:Void( target,level,xoffset,yoffset,x,y,width,height )
+Function glCullFace:Void( mode )
+Function glDepthFunc:Void( func )
+Function glDepthMask:Void( flag? )
+Function glDisable:Void( cap )
+Function glDisableClientState:Void( arry )
+Function glDrawArrays:Void( mode,first,count )
+Function glEnable:Void( cap )
+Function glEnableClientState:Void( arry )
+Function glFinish:Void()
+Function glFlush:Void()
+Function glFrontFace:Void( mode )
+Function glGetError:Int()
+Function glHint:Void( target,mode )
+Function glIsEnabled:Bool( cap )
+Function glIsTexture:Bool( texture )
+Function glLoadIdentity:Void()
+Function glLogicOp:Void( opcode )
+Function glMatrixMode:Void( mode )
+Function glPixelStorei:Void( pname,param )
+Function glPopMatrix:Void()
+Function glPushMatrix:Void()
+Function glSampleCoverage:Void( value#,invert? )
+Function glScissor:Void( x,y,width,height )
+Function glShadeModel:Void( mode )
+Function glStencilFunc:Void( func,ref,mask )
+Function glStencilMask:Void( mask )
+Function glStencilOp:Void( fail,zfail,zpass )
+Function glTexEnvi:Void( target,pname,param )
+Function glTexParameteri:Void( target,pname,param )
+Function glViewport:Void( x,y,width,height )
+
+'***** Fixed point versions not currently supported *****
+'
+'Function glAlphaFuncx:Void( func,ref )
+'Function glClearColorx:Void( red,green,blue,alpha )
+'Function glClearDepthx:Void( depth )
+'Function glClipPlanex:Void( plane,const GLfixed *equation )
+'Function glColor4x:Void( GLfixed red,GLfixed green,GLfixed blue,GLfixed alpha )
+'Function glDepthRangex:Void( zNear,zFar )
+'Function glFogx:Void( pname,GLfixed param )
+'Function glFogxv:Void( pname,const GLfixed *params )
+'Function glFrustumx:Void( GLfixed left,GLfixed right,GLfixed bottom,GLfixed top,GLfixed zNear,GLfixed zFar )
+'Function glGetClipPlanex:Void( pname,GLfixed eqn[4] )
+'Function glGetFixedv:Void( pname,GLfixed *params )
+'Function glGetLightxv:Void( light,pname,GLfixed *params )
+'Function glGetMaterialxv:Void( face,pname,GLfixed *params )
+'Function glGetTexEnvxv:Void( env,pname,GLfixed *params )
+'Function glGetTexParameterxv:Void( target,pname,GLfixed *params )
+'Function glLightModelx:Void( pname,GLfixed param )
+'Function glLightModelxv:Void( pname,const GLfixed *params )
+'Function glLightx:Void( light,pname,GLfixed param )
+'Function glLightxv:Void( light,pname,const GLfixed *params )
+'Function glLineWidthx:Void( GLfixed width )
+'Function glLoadMatrixx:Void( const GLfixed *m )
+'Function glMaterialx:Void( face,pname,GLfixed param )
+'Function glMaterialxv:Void( face,pname,const GLfixed *params )
+'Function glMultMatrixx:Void( const GLfixed *m )
+'Function glMultiTexCoord4x:Void( target,GLfixed s,GLfixed t,GLfixed r,GLfixed q )
+'Function glNormal3x:Void( GLfixed nx,GLfixed ny,GLfixed nz )
+'Function glOrthox:Void( GLfixed left,GLfixed right,GLfixed bottom,GLfixed top,GLfixed zNear,GLfixed zFar )
+'Function glPointParameterx:Void( pname,GLfixed param )
+'Function glPointParameterxv:Void( pname,const GLfixed *params )
+'Function glPointSizex:Void( GLfixed size )
+'Function glPolygonOffsetx:Void( GLfixed factor,GLfixed units )
+'Function glRotatex:Void( GLfixed angle,GLfixed x,GLfixed y,GLfixed z )
+'Function glSampleCoveragex:Void( value,GLboolean invert )
+'Function glScalex:Void( GLfixed x,GLfixed y,GLfixed z )
+'Function glTexEnvx:Void( target,pname,GLfixed param )
+'Function glTexEnvxv:Void( target,pname,const GLfixed *params )
+'Function glTexParameterx:Void( target,pname,GLfixed param )
+'Function glTexParameterxv:Void( target,pname,const GLfixed *params )
+'Function glTranslatex:Void( GLfixed x,GLfixed y,GLfixed z )
