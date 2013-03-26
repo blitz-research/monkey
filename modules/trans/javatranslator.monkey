@@ -276,7 +276,7 @@ Class JavaTranslator Extends CTranslator
 		'string/array methods
 		Case "length"
 			If StringType( expr.exprType ) Return texpr+".length()"
-			Return "bb_std_lang.arrayLength"+Bra( texpr )
+			Return texpr+".length"
 
 		Case "resize" 
 			Local fn$="resizeArray"
