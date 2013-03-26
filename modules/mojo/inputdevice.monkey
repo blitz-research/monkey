@@ -204,11 +204,15 @@ Class InputDevice
 Private
 
 	Method AddKeyHit:Void( key:Int )
-		If _keyHit[key] = 0 And _keysHitCount < 32
-			_keysToClear[_keysHitCount] = key
-			_keysHitCount += 1
+		If _keyHit[key] = 0
+			If _keysHitCount < 32
+				_keysToClear[_keysHitCount] = key
+				_keysHitCount += 1
+				_keyHit[key] += 1
+			End
+		Else
+			_keyHit[key] += 1
 		End
-		_keyHit[key] += 1
 	End
 
 	Field _keysHitCount:Int = 0
