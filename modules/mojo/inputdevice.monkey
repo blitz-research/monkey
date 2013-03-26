@@ -100,13 +100,13 @@ Class InputDevice
 		Case BBGameEvent.KeyDown
 			If _keyDown[data] Return
 			_keyDown[data]=True
-			_keyHit[data]+=1
+			AddKeyHit(data)
 			If data=KEY_LMB
 				_keyDown[KEY_TOUCH0]=True
-				_keyHit[KEY_TOUCH0]+=1
+				AddKeyHit(KEY_TOUCH0)
 			Else If data=KEY_TOUCH0
 				_keyDown[KEY_LMB]=True
-				_keyHit[KEY_LMB]+=1
+				AddKeyHit(KEY_LMB)
 			Endif
 		Case BBGameEvent.KeyUp
 			If Not _keyDown[data] Return
@@ -180,7 +180,7 @@ Class InputDevice
 				If state.buttons[j]
 					If Not _keyDown[key]
 						_keyDown[key]=True
-						_keyHit[key]+=1
+						AddKeyHit(key)
 					Endif
 				Else
 					_keyDown[key]=False
@@ -190,9 +190,10 @@ Class InputDevice
 	End
 	
 	Method EndUpdate:Void()
-		For Local i=0 Until 512
-			_keyHit[i]=0
+		For Local i=0 Until _keysHitCount
+			_keyHit[_keysToClear[i]]=0
 		Next
+		_keysHitCount=0
 		_charGet=0
 		_charPut=0
 	End
@@ -202,6 +203,16 @@ Class InputDevice
 
 Private
 
+	Method AddKeyHit:Void( key:Int )
+		If _keyHit[key] = 0 And _keysHitCount < 32
+			_keysToClear[_keysHitCount] = key
+			_keysHitCount += 1
+		End
+		_keyHit[key] += 1
+	End
+
+	Field _keysHitCount:Int = 0
+	Field _keysToClear:Int[32] '32 inputs per update seems generous
 	Field _keyDown:Bool[512]
 	Field _keyHit:Int[512]
 	Field _charQueue:Int[32]
