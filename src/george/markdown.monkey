@@ -148,7 +148,7 @@ Class Markdown
 		If Not src And Not _pre Return "<p>"
 		If src.StartsWith( "<pre>" ) _pre=True Else If src.StartsWith( "</pre>" ) _pre=False
 		
-		If src.StartsWith("#")
+		If src.StartsWith("#") And Not _pre
 			Local i:=1
 			While i<src.Length And src[i]=35	'"#"[0]
 				i+=1
