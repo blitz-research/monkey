@@ -146,7 +146,7 @@ Class Markdown
 
 		'dodgy hack for blank lines in <pre>
 		If Not src And Not _pre Return "<p>"
-		If src.trim().StartsWith( "<pre>" ) _pre=True Else If src.Trim().StartsWith( "</pre>" ) Or src.Trim().EndsWith( "</pre>" ) _pre=False 'using trim to allow for spaces either side of the tag
+		If src.Trim().StartsWith( "<pre>" ) _pre=True Else If src.Trim().StartsWith( "</pre>" ) Or src.Trim().EndsWith( "</pre>" ) _pre=False 'using trim to allow for spaces either side of the tag
 		
 		If src.StartsWith("#") And Not _pre 'This will currently fail if in a <pre> and the close tag is not at the start or end of the line of code (excluding spaces)
 			Local i:=1
