@@ -1,171 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-<style type="text/css">
-
-body{
-	margin:0px;
-	padding:0px;
-	color:#4488ff;
-	background-color:white;
-	font-family:Arial;
-	font-size:14px;
-}
-
-#header{
-	margin:0px;
-	padding:8px;
-	vertical-align:middle;
-}
-
-#page{
-	margin:0px;
-	padding:16px 32px;
-	color:#333333;
-	background-color:#e8e8e8;
-	font-family:Arial;
-	font-size:14px;
-}
-
-#menu{
-	margin:8px;
-	padding:8px;
-	width:180px;
-	border-radius:8px;
-	background-color:white;
-	box-shadow:4px 4px 4px 0px rgba(0,0,0,.1);
-	vertical-align:top;
-	float:left;
-}
-
-#main{
-	padding:8px;
-	overflow:hidden;
-}
-
-#navpath{
-	margin:0px 8px 1px 8px;
-	padding:8px;
-	border-radius:8px 8px 0 0;
-	box-shadow:4px 4px 4px 0px rgba(0,0,0,.1);
-	background-color:#f8f8f8;
-	font-size:12px;
-}
-
-#content{
-	margin:0 8px;
-	padding:16px 32px;
-	border-radius:0 0 8px 8px;
-	box-shadow:4px 4px 4px 0px rgba(0,0,0,.1);
-	background-color:white;
-}
-
-#footer{
-	clear:both;
-}
-
-.idx{
-	display:inline-block;
-	width:32%;
-	overflow:hidden;
-	vertical-align:middle;
-}
-
-.rounded{
-	padding:8px;
-	border-radius:8px;
-	border:solid 1px #cccccc;
-	background-color:#f8f8f8;
-}
-
-.box{
-	padding:0 0 24px;
-}
-
-.blk{
-	color:#000000;
-}
-
-.small{
-	font-size:12px;
-}
-
-a{
-	color:#224488;
-	text-decoration:none;
-}
-
-li{
-	margin-left:8px;
-}
-
-h1{
-	font-size:18px;
-	font-weight:bold;
-}
-
-h2{
-	font-size:16px;
-	font-weight:bold;
-}
-
-h3{
-	font-size:14px;
-	font-weight:bold;
-}
-
-table{
-	margin:0 16px;
-	padding:4px;
-	border-radius:8px;
-	border:solid 1px #eeeeee;
-	background-color:#fcfcfc;
-	border-spacing:1px;
-	text-align:left;
-}
-
-th{
-	background-color:#dddddd;
-	padding:2px 8px;
-}
-
-td{
-	background-color:#eeeeee;
-	padding:2px 8px;
-}
-
-pre{
-	margin:0 16px;
-	padding:8px;
-	border-radius:8px;
-	border:solid 1px #eeeeee;
-	background-color:#fcfcfc;
-	font-size:12px;
-	white-space:pre-wrap;	//fixme!
-}
-
-</style>
+	<link rel="stylesheet" type="text/css" href="css/reset.css" />
+	<link rel="stylesheet" type="text/css" href="css/grid.css" />
+	<link rel="stylesheet" type="text/css" href="css/global.css" />
+	<link rel="stylesheet" type="text/css" href="css/theme.css" />
 </head>
 <body>
 
 <div id='header'>
-
-	<a href='Home.html'>
-	<img style='display:inline-block;vertical-align:middle;' src='img/monkey32.png' /><b> Monkey V60 Documentation </b>
-	</a>
-	
-	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Module list.html'>Modules</a>
-	
-	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Class index.html'>Classes</a>
-	
-	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Interface index.html'>Interfaces</a>
-	
-	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Function index.html'>Functions</a>
-	
-	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Language reference.html'>Language</a>
-	
-	&nbsp;&nbsp;|&nbsp;&nbsp; <a class='small' href='Index.html'>Index</a>
-
+	<ul class="nav yui3-g" id="main_nav">
+		<li class="yui3-u"><a href='Home.html' id="link_home">Monkey V60 Documentation</a></li>
+		<li class="yui3-u"><a href='Module list.html'>Modules</a></li>
+		<li class="yui3-u"><a href='Class index.html'>Classes</a></li>
+		<li class="yui3-u"><a href='Interface index.html'>Interfaces</a></li>
+		<li class="yui3-u"><a href='Function index.html'>Functions</a></li>
+		<li class="yui3-u"><a href='Language reference.html'>Language</a></li>
+		<li class="yui3-u"><a href='Index.html'>Index</a></li>
+	</ul>
 </div>
 
 <div id='page'>
@@ -181,14 +33,17 @@ pre{
 
 	<div id='main'>
 	
-		<div id='navpath'>
-		
-		<a href='Home.html'>Home</a>
+		<div id='navpath' class="yui3-g">
+			<div class="yui3-u">
+				<a href='Home.html'>Home</a>
+			</div>
 		
 		${IF NAVLINKS}
 			${FOR NAVLINKS}
+			<div class="yui3-u">
 				/ ${IF NOT LAST} <a href='${URL}'>${TEXT}</a> ${ENDIF}
 				${IF LAST} ${TEXT} ${ENDIF}
+			</div>
 			${NEXT}
 		${ENDIF}
 			
@@ -202,7 +57,7 @@ pre{
 		
 		${IF LIST}
 			<h1>${LIST}</h1>
-			<ul>
+			<ul class="nav">
 			${FOR ITEMS}
 				<li><a href='${URL}'>${TEXT}</a></li>
 			${NEXT}
@@ -211,9 +66,15 @@ pre{
 			
 		${IF INDEX}
 			<h1>${INDEX}</h1>
-			${FOR ITEMS}
-				<a class='idx' href='${URL}'>${TEXT}</a>
-			${NEXT}
+			<div class="index">
+				<div class="yui3-g nav">
+					${FOR ITEMS}
+					<div class="yui3-u index-unit">
+						<a class='idx' href='${URL}'>${TEXT}</a>
+					</div>
+					${NEXT}
+				</div><!-- end grid -->
+			</div>
 		${ENDIF}
 		
 		${IF SCOPE}
@@ -247,7 +108,7 @@ pre{
 			${IF IMPORTS}			
 				<div class='box'>
 				<h2>Imports</h2>
-				<table class='small'>
+				<table>
 				${FOR IMPORTS}
 					<tr><td><a href='${URL}'>${IDENT}</a></td></tr>
 				${NEXT}
@@ -258,7 +119,7 @@ pre{
 			${IF CLASSES}
 				<div class='box'>
 				<h2>Classes</h2>
-				<table class='small'>
+				<table>
 				${FOR CLASSES}
 					<tr><td><a href='${URL}'>${IDENT}</a></td></tr>
 				${NEXT}
@@ -269,7 +130,7 @@ pre{
 			${IF IFACES}
 				<div class='box'>
 				<h2>Interfaces</h2>
-				<table class='small'>
+				<table>
 				${FOR IFACES}
 					<tr><td><a href='${URL}'>${IDENT}</a></td></tr>
 				${NEXT}
@@ -280,7 +141,7 @@ pre{
 			${IF CONSTS}
 				<div class='box'>
 				<h2>Constants</h2>
-				<table class='small'>
+				<table>
 				${FOR CONSTS}
 					<tr><td>${IDENT} : ${TYPE}</td></tr>
 				${NEXT}
@@ -291,7 +152,7 @@ pre{
 			${IF GLOBALS}
 				<div class='box'>
 				<h2>Globals</h2>
-				<table class='small'>
+				<table>
 				${FOR GLOBALS}
 					<tr><td><a href='#${UIDENT}'>${IDENT}</a> : ${TYPE}</td></tr>
 				${NEXT}
@@ -302,7 +163,7 @@ pre{
 			${IF FIELDS}
 				<div class='box'>
 				<h2>Fields</h2>
-				<table class='small'>
+				<table>
 				${FOR FIELDS}
 					<tr><td><a href='#${UIDENT}'>${IDENT}</a> : ${TYPE}</td></tr>
 				${NEXT}
@@ -313,7 +174,7 @@ pre{
 			${IF CTORS}
 				<div class='box'>
 				<h2>Constructors</h2>
-				<table class='small'>
+				<table>
 				${FOR CTORS}
 					<tr><td><a href='#${UIDENT}'>${IDENT}</a> ${TYPE} ${ARGS}</td></tr>
 				${NEXT}
@@ -324,7 +185,7 @@ pre{
 			${IF PROPS}
 				<div class='box'>
 				<h2>Properties</h2>
-				<table class='small'>
+				<table>
 				${FOR PROPS}
 					<tr><td><a href='#${UIDENT}'>${IDENT}</a> : ${TYPE} ${ARGS}</td></tr>
 				${NEXT}
@@ -335,7 +196,7 @@ pre{
 			${IF METHODS}
 				<div class='box'>
 				<h2>Methods</h2>
-				<table class='small'>
+				<table>
 				${FOR METHODS}
 					<tr><td><a href='#${UIDENT}'>${IDENT}</a> : ${TYPE} ${ARGS}</td></tr>
 				${NEXT}
@@ -346,7 +207,7 @@ pre{
 			${IF FUNCTIONS}
 				<div class='box'>
 				<h2>Functions</h2>
-				<table class='small'>
+				<table>
 				${FOR FUNCTIONS}
 					<tr><td><a href='#${UIDENT}'>${IDENT}</a> : ${TYPE} ${ARGS}</td></tr>
 				${NEXT}
@@ -355,7 +216,7 @@ pre{
 			${ENDIF}
 			
 			${IF LONG_DESC}
-				<a name='long_desc'></a>
+				<a id='long_desc'></a>
 				<div class='box'>
 				<h2>Detailed Discussion</h2>
 				${LONG_DESC}
@@ -366,15 +227,24 @@ pre{
 				<div class='box'>
 				<h2>Field Documentation</h2>
 				${FOR FIELDS}
-					<a name='${UIDENT}'></a>
+					<a id='${UIDENT}'></a>
 					<div class='box'>
-					<h3 class='rounded'>Field ${IDENT} : ${XTYPE}</h3>
-					${DESCRIPTION}
+					<h3 class='ident-header'>Field ${IDENT} : ${XTYPE}</h3>
+					<div class="description">
+						${DESCRIPTION}
+					</div>
 					${IF SEE_ALSO}
-						<p><b>See also</b> ${SEE_ALSO}
+						<h4 class="heading_see_also">See also</h4>
+						<div class="see_also">
+						${SEE_ALSO}
+						</div>
 					${ENDIF}
 					${IF EXAMPLE}
-						<p><b>Example</b> ${EXAMPLE}
+						<h4 class="heading_example">Example</h4>
+						<div class="example">
+							<?prettify lang=monkey?>
+							${EXAMPLE}
+						</div>
 					${ENDIF}
 					</div>
 				${NEXT}
@@ -385,15 +255,24 @@ pre{
 				<div class='box'>
 				<h2>Global Documentation</h2>
 				${FOR GLOBALS}
-					<a name='${UIDENT}'></a>
+					<a id='${UIDENT}'></a>
 					<div class='box'>
-					<h3 class='rounded'>Global ${IDENT} : ${XTYPE}</h3>
-					${DESCRIPTION}
+					<h3 class='ident-header'>Global ${IDENT} : ${XTYPE}</h3>
+					<div class="description">
+						${DESCRIPTION}
+					</div>
 					${IF SEE_ALSO}
-						<p><b>See also</b> ${SEE_ALSO}
+						<h4 class="heading_see_also">See also</h4>
+						<div class="see_also">
+						${SEE_ALSO}
+						</div>
 					${ENDIF}
 					${IF EXAMPLE}
-						<p><b>Example</b> ${EXAMPLE}
+						<h4 class="heading_example">Example</h4>
+						<div class="example">
+							<?prettify lang=monkey?>
+							${EXAMPLE}
+						</div>
 					${ENDIF}
 					</div>
 				${NEXT}
@@ -404,15 +283,24 @@ pre{
 				<div class='box'>
 				<h2>Constructor Documentation</h2>
 				${FOR CTORS}
-					<a name='${UIDENT}'></a>
+					<a id='${UIDENT}'></a>
 					<div class='box'>
-					<h3 class='rounded'>Method New ${XTYPE} ${XARGS}</h3>
-					${DESCRIPTION}
+					<h3 class='ident-header'>Method New ${XTYPE} ${XARGS}</h3>
+					<div class="description">
+						${DESCRIPTION}
+					</div>
 					${IF SEE_ALSO}
-						<p><b>See also</b> ${SEE_ALSO}
+						<h4 class="heading_see_also">See also</h4>
+						<div class="see_also">
+						${SEE_ALSO}
+						</div>
 					${ENDIF}
 					${IF EXAMPLE}
-						<p><b>Example</b> ${EXAMPLE}
+						<h4 class="heading_example">Example</h4>
+						<div class="example">
+							<?prettify lang=monkey?>
+							${EXAMPLE}
+						</div>
 					${ENDIF}
 					</div>
 				${NEXT}
@@ -423,15 +311,24 @@ pre{
 				<div class='box'>
 				<h2>Property Documentation</h2>
 				${FOR PROPS}
-					<a name='${UIDENT}'></a>
+					<a id='${UIDENT}'></a>
 					<div class='box'>
 					<h3 class='rounded'>Method ${IDENT} : ${XTYPE} ${XARGS} Property</h3>
-					${DESCRIPTION}
+					<div class="description">
+						${DESCRIPTION}
+					</div>
 					${IF SEE_ALSO}
-						<p><b>See also</b> ${SEE_ALSO}
+						<h4 class="heading_see_also">See also</h4>
+						<div class="see_also">
+						${SEE_ALSO}
+						</div>
 					${ENDIF}
 					${IF EXAMPLE}
-						<p><b>Example</b> ${EXAMPLE}
+						<h4 class="heading_example">Example</h4>
+						<div class="example">
+							<?prettify lang=monkey?>
+							${EXAMPLE}
+						</div>
 					${ENDIF}
 					</div>
 				${NEXT}
@@ -442,15 +339,24 @@ pre{
 				<div class='box'>
 				<h2>Method Documentation</h2>
 				${FOR METHODS}
-					<a name='${UIDENT}'></a>
+					<a id='${UIDENT}'></a>
 					<div class='box'>
-					<h3 class='rounded'>Method ${IDENT} : ${XTYPE} ${XARGS}</h3>
-					${DESCRIPTION}
+					<h3 class='ident-header'>Method ${IDENT} : ${XTYPE} ${XARGS}</h3>
+					<div class="description">
+						${DESCRIPTION}
+					</div>
 					${IF SEE_ALSO}
-						<p><b>See also</b> ${SEE_ALSO}
+						<h4 class="heading_see_also">See also</h4>
+						<div class="see_also">
+						${SEE_ALSO}
+						</div>
 					${ENDIF}
 					${IF EXAMPLE}
-						<p><b>Example</b> ${EXAMPLE}
+						<h4 class="heading_example">Example</h4>
+						<div class="example">
+							<?prettify lang=monkey?>
+							${EXAMPLE}
+						</div>
 					${ENDIF}
 					</div>
 				${NEXT}
@@ -461,15 +367,24 @@ pre{
 				<div class='box'>
 				<h2>Function Documentation</h2>
 				${FOR FUNCTIONS}
-					<a name='${UIDENT}'></a>
+					<a id='${UIDENT}'></a>
 					<div class='box'>
-					<h3 class='rounded'>Function ${IDENT} : ${XTYPE} ${XARGS}</h3>
-					${DESCRIPTION}
+					<h3 class='ident-header'>Function ${IDENT} : ${XTYPE} ${XARGS}</h3>
+					<div class="description">
+						${DESCRIPTION}
+					</div>
 					${IF SEE_ALSO}
-						<p><b>See also</b> ${SEE_ALSO}
+						<h4 class="heading_see_also">See also</h4>
+						<div class="see_also">
+						${SEE_ALSO}
+						</div>
 					${ENDIF}
 					${IF EXAMPLE}
-						<p><b>Example</b> ${EXAMPLE}
+						<h4 class="heading_example">Example</h4>
+						<div class="example">
+							<?prettify lang=monkey?>
+							${EXAMPLE}
+						</div>
 					${ENDIF}
 					</div>
 				${NEXT}
@@ -477,11 +392,7 @@ pre{
 			${ENDIF}
 
 		${ENDIF}
-		
-		<br><br><br><br><br><br><br><br><br><br>
-		<br><br><br><br><br><br><br><br><br><br>
-		<br><br><br><br><br><br><br><br><br><br>
-		<br><br><br><br><br><br><br><br><br><br>
+
 					
 		</div>
 
@@ -491,7 +402,12 @@ pre{
 
 	</div>
 
-</div> 
-
+</div>
+<script src="js/google-code-prettify/src/prettify.js"></script>
+<script src="js/google-code-prettify/src/lang-monkey.js"></script>
+<!--<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>-->
+<script>
+prettyPrint();
+</script>
 </body>
 </html>
