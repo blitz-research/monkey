@@ -269,7 +269,7 @@ Class JsTranslator Extends CTranslator
 		Case "print" Return "print"+Bra( arg0 )
 		Case "error" Return "error"+Bra( arg0 )
 		Case "debuglog" Return "debugLog"+Bra( arg0 )
-		Case "debugstop" Return "debugger"
+		Case "debugstop" Return "debugStop()"
 
 		'string/array methods
 		Case "length" Return texpr+".length"
