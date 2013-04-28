@@ -289,6 +289,7 @@ Class Reflector
 	
 	Method Emit$( fdecl:FuncDecl )
 		If Not ValidType( fdecl.retType ) Return
+		If fdecl.ident = "DebugStop" Or fdecl.ident = "DebugLog" Return
 		For Local arg:=Eachin fdecl.argDecls
 			If Not ValidType( arg.type ) Return
 		Next
