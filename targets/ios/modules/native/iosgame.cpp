@@ -25,7 +25,6 @@ public:
 	
 	//***** INTERNAL *****
 	
-	virtual void StartGame();
 	virtual void SuspendGame();
 	virtual void ResumeGame();
 	
@@ -345,15 +344,6 @@ BBMonkeyAppDelegate *BBIosGame::GetUIAppDelegate(){
 
 //***** INTERNAL *****
 
-//Bit of a kludge for now...
-void BBIosGame::StartGame(){
-	MonkeyView *view=_appDelegate->view;
-    view->backingWidth=view.frame.size.width;
-    view->backingHeight=view.frame.size.height;
-    BBGame::StartGame();
-
-}
-
 void BBIosGame::SuspendGame(){
 	BBGame::SuspendGame();
 	ValidateUpdateTimer();
@@ -446,6 +436,8 @@ void BBIosGame::TouchesEvent( UIEvent *event ){
 
 -(id)initWithCoder:(NSCoder*)coder{
 
+	backingWidth=0;
+	backingHeight=0;
 	defaultFramebuffer=0;
 	colorRenderbuffer=0;
 	depthRenderbuffer=0;
@@ -503,7 +495,9 @@ void BBIosGame::TouchesEvent( UIEvent *event ){
 }
 
 -(void)drawView:(id)sender{
+	printf( "drawView\n" );fflush( stdout );
 	if( BBIosGame *game=BBIosGame::IosGame() ){
+		game->StartGame();	//NOP if game already started
 		game->RenderGame();
 	}
 }
@@ -517,7 +511,6 @@ void BBIosGame::TouchesEvent( UIEvent *event ){
 }
 
 -(BOOL)resizeFromLayer:(CAEAGLLayer *)layer{
-
 	// Allocate color buffer backing based on the current layer size
 	if( CFG_OPENGL_GLES20_ENABLED ){
 	
@@ -546,6 +539,7 @@ void BBIosGame::TouchesEvent( UIEvent *event ){
 		if( glCheckFramebufferStatusOES( GL_FRAMEBUFFER_OES )!=GL_FRAMEBUFFER_COMPLETE_OES ) exit(-1);
 		
 	}
+	
 	return YES;
 }
 
@@ -659,23 +653,38 @@ void BBIosGame::TouchesEvent( UIEvent *event ){
 
 -(BOOL)textFieldShouldEndEditing:(UITextField*)textField{
 
-	if( textFieldState ){	//still active?
-		game->KeyEvent( BBGameEvent::KeyChar,27 );	//generate ESC
-		return NO;
-	}
+	if( textFieldState ) game->KeyEvent( BBGameEvent::KeyChar,27 );	//generate ESC
 	
-	return YES;
+	return NO;
+}
+
+-(BOOL)textFieldShouldReturn:(UITextField*)textField{
+
+	if( textFieldState ) game->KeyEvent( BBGameEvent::KeyChar,13 );	//generate Return
+	
+	return NO;
+}
+
+-(BOOL)textFieldShouldClear:(UITextField*)textField{
+
+	return NO;
 }
 
 -(BOOL)textField:(UITextField*)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString*)str{
-	
+
+	if( !textFieldState ) return NO;
+		
 	int n=[str length];
 	
 	if( n==0 && range.length==1 ){
-		game->KeyEvent( BBGameEvent::KeyChar,8 );	//generate BACKSPC
+		game->KeyEvent( BBGameEvent::KeyChar,8 );						//generate Backspace
 	}else if( n==1 && range.length==0 ){
 		int chr=[str characterAtIndex:0];
-		game->KeyEvent( BBGameEvent::KeyChar,chr==10 ? 13 : chr );
+		if( chr>=32 ){
+			game->KeyEvent( BBGameEvent::KeyChar,chr );
+			textField.text=@"";											//so textfield only contains last char typed.
+			return YES;
+		}
 	}
 	return NO;
 }
