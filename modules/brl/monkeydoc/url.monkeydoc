@@ -5,7 +5,7 @@ A url, or web address, is a character string that specifies the location of a re
 
 The format of a url is:
 
-\scheme://user:pass@domain:port/path?query#fragment
+scheme://username:password\@domain:port/path?query#fragment
 
 Please see the [[Url]] class for more information.
 
@@ -17,42 +17,57 @@ Please see the [[Url]] class for more information.
 
 Creates a new url object.
 
-# Method Set( url:String )
+
+# Method Set:Void( url:String )
 
 Changes the url.
 
-# Method ToString:String( debug:Bool=false )
 
-Returns the url as a string. Pass in the bool True to get a useful debug string.
+# Method ToString:String()
 
-# Method Scheme:String()
+Returns the url as a string.
+
+
+# Method Scheme:String() Property
 
 Returns the scheme part of the url.
 
-# Method Username:String()
+
+# Method Username:String() Property
 
 Returns the username part of the url.
 
-# Method Password:String()
 
-Returns the pass part of the url.
+# Method Password:String() Property
 
-# Method Domain:String()
+Returns the password part of the url.
+
+
+# Method Domain:String() Property
 
 Returns the domain part of the url.
 
-# Method Port:Int()
+
+# Method Port:Int() Property
 
 Returns the port part of the url.
 
-# Method Path:String()
 
-Return the path part of the url.
+# Method Path:String() Property
 
-# Method Query:String()
+Returns the path part of the url.
 
-Return the query part of the url.
 
-# Method Fragment:String()
+# Method Query:String() Property
 
-Return the anchor part of the url.
+Returns the query part of the url.
+
+
+# Method Fragment:String() Property
+
+Returns the anchor part of the url.
+
+
+# Method FullPath:String() Property
+
+Returns the path, query and fragment parts of the url, combined with appropriate separators.
