@@ -5,7 +5,7 @@ function BBThread(){
 
 BBThread.prototype.Start=function(){
 	this.running=true;
-	this.Run__UNSAFE__();
+	this.Run();
 }
 
 BBThread.prototype.IsRunning=function(){
@@ -13,5 +13,9 @@ BBThread.prototype.IsRunning=function(){
 }
 
 BBThread.prototype.Run__UNSAFE__=function(){
-	this.running=false;
+}
+
+BBThread.prototype.Run=function(){
+	this.Run__UNSAFE__();
+	this.running = false;
 }
