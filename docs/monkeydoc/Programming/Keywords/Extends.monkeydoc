@@ -1,0 +1,65 @@
+> Keyword Extends
+
+Declares that class definition inherits a parent class.
+
+>> Syntax
+
+Class *Identifier* [ < *Parameters* > ] [ `Extends` *Class* ] [ Implements *Interfaces* ] [ Final ]~n
+&nbsp;&nbsp;' Declarations...~n
+End [ Class ]
+
+>> Description
+
+The Extends keyword allows a class to 'extend' a parent class, thereby inheriting all of its fields, methods, functions, globals and constants.
+
+This new class can add its own fields, methods, etc, but can also over-ride the existing fields, methods and so on by redefining them.
+
+>> See also
+
+[[Class]] [[Super]]  
+[Language reference](Language reference#classes)
+
+>> Example
+
+Here we have three classes:
+
+* a base class, Animal, with an 'x' field, a 'legs' field and a 'Move' method;
+* the Dog class 'extends' the Animal class, inheriting the x and legs fields and adding its own 'Bark' method;
+* the Fly class also extends the Animal class, but over-rides the legs field and Move method, while adding a 'y' field and a 'Buzz' method.
+
+<pre>
+Class Animal
+
+	Field x
+	Field legs = 4
+
+	Method Move ()
+		x = x + 1
+	End
+
+End
+
+Class Dog Extends Animal
+
+	Method Bark ()
+		Print "Woof"
+	End
+
+End
+
+Class Fly Extends Animal
+
+	Field legs = 6
+	Field y
+
+	Method Move ()
+		x = Rnd (-4, 4)
+		y = Rnd (-4, 4)
+	End
+
+	Method Buzz ()
+		Print "ZzzzZZZzzzzzZZZZ..."
+	End
+
+End
+</pre>

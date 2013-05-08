@@ -436,6 +436,8 @@ void BBIosGame::TouchesEvent( UIEvent *event ){
 
 -(id)initWithCoder:(NSCoder*)coder{
 
+	backingWidth=0;
+	backingHeight=0;
 	defaultFramebuffer=0;
 	colorRenderbuffer=0;
 	depthRenderbuffer=0;
@@ -493,8 +495,11 @@ void BBIosGame::TouchesEvent( UIEvent *event ){
 }
 
 -(void)drawView:(id)sender{
-
-	if( BBIosGame *game=BBIosGame::IosGame() ) game->RenderGame();
+	printf( "drawView\n" );fflush( stdout );
+	if( BBIosGame *game=BBIosGame::IosGame() ){
+		game->StartGame();	//NOP if game already started
+		game->RenderGame();
+	}
 }
 
 -(void)presentRenderbuffer{
@@ -506,7 +511,6 @@ void BBIosGame::TouchesEvent( UIEvent *event ){
 }
 
 -(BOOL)resizeFromLayer:(CAEAGLLayer *)layer{
-
 	// Allocate color buffer backing based on the current layer size
 	if( CFG_OPENGL_GLES20_ENABLED ){
 	
@@ -535,7 +539,7 @@ void BBIosGame::TouchesEvent( UIEvent *event ){
 		if( glCheckFramebufferStatusOES( GL_FRAMEBUFFER_OES )!=GL_FRAMEBUFFER_COMPLETE_OES ) exit(-1);
 		
 	}
-    
+	
 	return YES;
 }
 

@@ -1,0 +1,57 @@
+
+> Keyword Super
+
+Provides parent class access.
+
+>> Syntax
+
+Super
+
+>> Description
+
+The Super keyword allows a method within an extended class to call a 'super class' method, ie. one defined in the class it is extended from.
+
+>> See also
+
+[[Self]] [[Extends]] [[Method]]  
+[Language reference](Language reference#methods)
+
+>> Example
+
+*In this example, if 'superpowers' is True, method Fly from class Hero will print a string. If not, it will call the 'super' method Fly in class Human.*
+
+<pre>
+Class Human
+
+	Method Fly ()
+		Print "No powers -- cannot fly!"
+	End
+
+End
+
+Class Hero Extends Human
+
+	Field superpowers:Bool = True
+
+	Method Fly ()
+
+		If superpowers
+			Print "Up, up and a--weee!"
+		Else
+			Super.Fly
+		Endif
+
+	End
+
+End
+
+Function Main ()
+
+	Local atomstar:Hero = New Hero
+
+'	atomstar.superpowers = False ' Uncomment to give up powers for love...
+
+	atomstar.Fly
+
+End
+</pre>

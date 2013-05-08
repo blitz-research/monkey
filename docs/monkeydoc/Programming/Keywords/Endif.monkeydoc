@@ -1,0 +1,34 @@
+> Keyword Endif
+
+Marks the end of a conditional block.
+
+>> Syntax
+
+If *expression* [Then]~n
+&nbsp;&nbsp;&nbsp;&nbsp;*Statements...*~n
+Endif  
+
+>> Description
+
+Endif marks the end of a conditional block. Optionally, the variant End If can be used instead. See [[If]] for more information on If blocks.  
+
+>> See also
+
+[[If]] [[Else]] [[Elseif]]  
+[Language reference](Language reference#statements)  
+
+>> Examples
+
+<pre>
+' Simple variable check:
+
+		If a = 1
+				Print "a equals one"
+		Endif
+
+' Same, using End If instead of Endif:
+
+		If a = 1
+				Print "a equals one"
+		End If
+</pre>
