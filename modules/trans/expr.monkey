@@ -12,7 +12,7 @@ Class Expr
 	Method ToString$()
 		Return "<Expr>"
 	End
-	
+
 	Method Copy:Expr()
 		InternalErr
 	End
@@ -165,7 +165,7 @@ Class ConstExpr Extends Expr
 				value=StringToInt( value[1..],16 )
 			Else
 				'strip leading 0's or we can end up with an octal const!
-				While value.StartsWith( "0" )
+				While value.Length>1 And value.StartsWith( "0" )
 					value=value[1..]
 				Wend
 			Endif
@@ -631,7 +631,6 @@ Class CastExpr Extends Expr
 	
 	Method Eval$()
 		Local val$=expr.Eval()
-		If Not val Return val
 		If BoolType( exprType )
 			If IntType( expr.exprType )
 				If Int( val ) Return "1"
@@ -640,7 +639,7 @@ Class CastExpr Extends Expr
 				If Float( val ) Return "1"
 				Return ""
 			Else If StringType( expr.exprType )
-				If val.Length Return "1"
+				If String( val ) Return "1"
 				Return ""
 			Endif
 		Else If IntType( exprType )
@@ -654,6 +653,7 @@ Class CastExpr Extends Expr
 		Else If StringType( exprType )
 			Return String( val )
 		Endif
+		If Not val Return val
 		Return Super.Eval()
 	End
 	
@@ -808,6 +808,9 @@ Class BinaryMathExpr Extends BinaryExpr
 				If Not y Err "Divide by zero error."
 				Return x / y
 			Case "*" Return x * y
+			Case "mod"
+				If Not y Err "Divide by zero error."
+				Return x Mod y
 			Case "+" Return x + y
 			Case "-" Return x - y
 			End
@@ -844,6 +847,9 @@ Class BinaryCompareExpr Extends BinaryExpr
 		ty=BalanceTypes( lhs.exprType,rhs.exprType )
 		
 		If ArrayType( ty ) Err "Arrays cannot be compared."
+
+		If BoolType( ty ) And op<>"=" And op<>"<>" Err "Bools can only be compared for equality."
+		
 		If ObjectType( ty ) And op<>"=" And op<>"<>" Err "Objects can only be compared for equality."
 
 		lhs=lhs.Cast( ty )
@@ -858,7 +864,14 @@ Class BinaryCompareExpr Extends BinaryExpr
 	
 	Method Eval$()
 		Local r=-1
-		If IntType( ty )
+		If BoolType( ty )
+			Local lhs:=Self.lhs.Eval()
+			Local rhs:=Self.rhs.Eval()
+			Select op
+			Case "="  r=(lhs= rhs)
+			Case "<>" r=(lhs<>rhs)
+			End Select
+		Else If IntType( ty )
 			Local lhs:=Int( Self.lhs.Eval() )
 			Local rhs:=Int( Self.rhs.Eval() )
 			Select op

@@ -1,0 +1,190 @@
+> Keyword End
+
+Declares the end of a class, function, method or similar block-style definition, or of certain loop or conditional blocks.
+
+>> Syntax
+*Block keyword*~n
+End [*Block keyword*]
+
+>> Description
+
+The End keyword closes off a class, function, method or similar block (eg. interfaces, future additions), but may also be used in place of block-specific keywords which close certain loops or conditional blocks (ie. those that don't need to perform testing at the end of the block).
+
+End may also be combined with a space followed by the block opening keyword. For example, a Class block may be closed by End or End Class according to individual preference.
+
+Some examples are listed below.
+
+*Class-block closing options:*
+
+<pre>
+Class
+	' Contents...
+End
+</pre>
+
+<pre>
+Class
+	' Contents...
+End Class
+</pre>
+
+*Function-block closing options:*
+<pre>
+Function
+	' Contents...
+End
+</pre>
+
+<pre>
+Function
+	' Contents...
+End Function
+</pre>
+
+*If-block closing options:*
+<pre>
+If
+	' Contents...
+Endif
+</pre>
+
+<pre>
+If
+	' Contents...
+End
+</pre>
+
+<pre>
+If
+	' Contents...
+End If
+</pre>
+
+*Select-block closing options:*
+<pre>
+Select
+	' Contents...
+End
+</pre>
+
+<pre>
+Select
+	' Contents...
+End Select
+</pre>
+
+*For-loop closing options:*
+<pre>
+For
+	' Contents...
+Next
+</pre>
+
+<pre>
+For
+	' Contents...
+End
+</pre>
+
+<pre>
+For
+	' Contents...
+End For
+</pre>
+
+*While-block closing options:*
+<pre>
+While
+	' Contents...
+Wend
+</pre>
+
+<pre>
+While
+	' Contents...
+End
+</pre>
+
+<pre>
+While
+	' Contents...
+End While
+</pre>
+
+>> See also
+
+[[Class]] [[Function]] [[Method]] [[Interface]]  
+[[If]] [[Endif]] [[Select]] [[For]] [[Next]] [[While]] [[Wend]]  
+
+>> Example
+
+Classes, functions, etc:
+
+<pre>
+' CLASS BLOCKS:
+
+	Class Animal
+		' Code
+	End
+
+	Class Animal
+		' Code
+	End Class
+
+' FUNCTION BLOCKS:
+
+	Function Walk ()
+		' Code
+	End
+
+	Function Walk ()
+		' Code
+	End Function
+</pre>
+
+Loop/conditional blocks:
+
+<pre>
+' IF BLOCKS:  
+
+	If a = b
+		' Code
+	Endif
+
+	If a = b
+		' Code
+	End If
+
+	If a = b
+		' Code
+	End
+
+' FOR BLOCKS:  
+
+	For a = 1 To 10
+		' Code
+	Next
+
+	For a = 1 To 10
+		' Code
+	End For
+
+	For a = 1 To 10
+		' Code
+	End
+
+' WHILE BLOCKS:  
+
+	While a < b
+		' Code
+	Wend
+
+	While a < b
+		' Code
+	End While
+
+	While a < b
+		' Code
+	End
+
+</pre>

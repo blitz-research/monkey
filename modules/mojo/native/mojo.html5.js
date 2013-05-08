@@ -131,7 +131,9 @@ gxtkGraphics.prototype.SetScissor=function( x,y,w,h ){
 		this.gc.closePath();
 	}
 	this.gc.fillStyle=this.color;
-	this.gc.strokeStyle=this.color;
+	this.gc.strokeStyle=this.color;	
+	this.gc.globalAlpha=this.alpha;	
+	this.gc.globalCompositeOperation=this.blend;
 	if( this.tformed ) this.gc.setTransform( this.ix,this.iy,this.jx,this.jy,this.tx,this.ty );
 }
 
@@ -215,10 +217,21 @@ gxtkGraphics.prototype.DrawOval=function( x,y,w,h ){
 }
 
 gxtkGraphics.prototype.DrawPoly=function( verts ){
-	if( verts.length<6 ) return;
+	if( verts.length<2 ) return;
 	this.gc.beginPath();
 	this.gc.moveTo( verts[0],verts[1] );
 	for( var i=2;i<verts.length;i+=2 ){
+		this.gc.lineTo( verts[i],verts[i+1] );
+	}
+	this.gc.fill();
+	this.gc.closePath();
+}
+
+gxtkGraphics.prototype.DrawPoly2=function( verts,surface,srx,srcy ){
+	if( verts.length<4 ) return;
+	this.gc.beginPath();
+	this.gc.moveTo( verts[0],verts[1] );
+	for( var i=4;i<verts.length;i+=4 ){
 		this.gc.lineTo( verts[i],verts[i+1] );
 	}
 	this.gc.fill();
@@ -382,6 +395,7 @@ function gxtkAudio(){
 	this.channels=new Array(33);
 	for( var i=0;i<33;++i ){
 		this.channels[i]=new gxtkChannel();
+		if( !this.okay ) this.channels[i].state=-1;
 	}
 }
 
@@ -402,6 +416,7 @@ gxtkAudio.prototype.Resume=function(){
 }
 
 gxtkAudio.prototype.LoadSample=function( path ){
+	if( !this.okay ) return null;
 
 	var audio=new Audio( this.game.PathToUrl( path ) );
 	if( !audio ) return null;
@@ -414,7 +429,7 @@ gxtkAudio.prototype.PlaySample=function( sample,channel,flags ){
 
 	var chan=this.channels[channel];
 
-	if( chan.state!=0 ){
+	if( chan.state>0 ){
 		chan.audio.pause();
 		chan.state=0;
 	}
@@ -445,7 +460,7 @@ gxtkAudio.prototype.PlaySample=function( sample,channel,flags ){
 gxtkAudio.prototype.StopChannel=function( channel ){
 	var chan=this.channels[channel];
 	
-	if( chan.state!=0 ){
+	if( chan.state>0 ){
 		chan.audio.pause();
 		chan.state=0;
 	}
@@ -481,7 +496,7 @@ gxtkAudio.prototype.ChannelState=function( channel ){
 
 gxtkAudio.prototype.SetVolume=function( channel,volume ){
 	var chan=this.channels[channel];
-	if( chan.state!=0 ) chan.audio.volume=volume;
+	if( chan.state>0 ) chan.audio.volume=volume;
 	chan.volume=volume;
 }
 

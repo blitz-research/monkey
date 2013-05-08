@@ -1,0 +1,73 @@
+
+# Module brl.url
+
+A url, or web address, is a character string that specifies the location of a resource.
+
+The format of a url is:
+
+scheme://username:password\@domain:port/path?query#fragment
+
+Please see the [[Url]] class for more information.
+
+
+# Class Url
+
+
+# Method New( url:String )
+
+Creates a new url object.
+
+
+# Method Set:Void( url:String )
+
+Changes the url.
+
+
+# Method ToString:String()
+
+Returns the url as a string.
+
+
+# Method Scheme:String() Property
+
+Returns the scheme part of the url.
+
+
+# Method Username:String() Property
+
+Returns the username part of the url.
+
+
+# Method Password:String() Property
+
+Returns the password part of the url.
+
+
+# Method Domain:String() Property
+
+Returns the domain part of the url.
+
+
+# Method Port:Int() Property
+
+Returns the port part of the url.
+
+
+# Method Path:String() Property
+
+Returns the path part of the url.
+
+
+# Method Query:String() Property
+
+Returns the query part of the url.
+
+
+# Method Fragment:String() Property
+
+Returns the anchor part of the url.
+
+
+# Method FullPath:String() Property
+
+Returns the path, query and fragment parts of the url, combined with appropriate separators.
