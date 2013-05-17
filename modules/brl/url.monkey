@@ -1,11 +1,10 @@
 
 Class Url
 	Method New(url:String, scheme:String = "", port:Int = 0)
-		Set(url)
-		
-		'now override with passed in variables
 		If scheme.Length _scheme = scheme
 		If port > 0 _port = port
+	
+		Set(url)
 	End
 	
 	Method Set:Void(url:String)
