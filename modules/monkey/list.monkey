@@ -1,4 +1,3 @@
-
 ' Module monkey.list
 '
 ' Placed into the public domain 24/02/2011.
@@ -173,7 +172,7 @@ Class List<T>
 	End
 
 	Method InsertAfterEach:Void( where:T,data:T )
-		Local node:=FindNode( where )
+		Local node:=Find( where )
 		While node
 			node=New Node<T>( node._succ,node,data )
 			node=Find( where,node._succ )
