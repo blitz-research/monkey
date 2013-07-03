@@ -31,7 +31,7 @@ The following app config settings are currently supported, shown with example va
 
 'GLFW settings
 '
-#GLFW_USE_GCC=False
+#GLFW_USE_MINGW=False
 #GLFW_WINDOW_TITLE="Monkey Game"
 #GLFW_WINDOW_WIDTH=640
 #GLFW_WINDOW_HEIGHT=480
