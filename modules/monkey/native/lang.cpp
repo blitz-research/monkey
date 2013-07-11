@@ -960,19 +960,55 @@ public:
 	}
 	
 	int ToInt()const{
-		return atoi( ToCString<char>() );
+		char buf[64];
+		return atoi( ToCString<char>( buf,sizeof(buf) ) );
 	}
 	
 	Float ToFloat()const{
-		return atof( ToCString<char>() );
+		char buf[256];
+		return atof( ToCString<char>( buf,sizeof(buf) ) );
 	}
-	
-	template<class C> C *ToCString()const{
 
-		C *p=(C*)malloc( (rep->length+1)*sizeof(C) );	//&Array<C>( rep->length+1 )[0];
-		
-		for( int i=0;i<rep->length;++i ) p[i]=rep->data[i];
-		p[rep->length]=0;
+	template<class C> class CString{
+		struct Rep{
+			int refs;
+			C data[1];
+		};
+		Rep *_rep;
+	public:
+		template<class T> CString( const T *data,int length ){
+			_rep=(Rep*)malloc( length*sizeof(C)+sizeof(Rep) );
+			_rep->refs=1;
+			_rep->data[length]=0;
+			for( int i=0;i<length;++i ){
+				_rep->data[i]=(C)data[i];
+			}
+		}
+		CString( const CString &c ):_rep(c._rep){
+			++_rep->refs;
+		}
+		~CString(){
+			if( !--_rep->refs ) free( _rep );
+		}
+		CString &operator=( const CString &c ){
+			++c._rep->refs;
+			if( !--_rep->refs ) free( _rep );
+			_rep=c._rep;
+			return *this;
+		}
+		operator const C*()const{ 
+			return _rep->data;
+		}
+	};
+	
+	template<class C> CString<C> ToCString()const{
+		return CString<C>( rep->data,rep->length );
+	}
+
+	template<class C> C *ToCString( C *p,int length )const{
+		if( --length>rep->length ) length=rep->length;
+		for( int i=0;i<length;++i ) p[i]=rep->data[i];
+		p[length]=0;
 		return p;
 	}
 
