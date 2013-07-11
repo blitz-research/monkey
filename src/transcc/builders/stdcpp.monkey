@@ -2,7 +2,9 @@
 Import builder
 
 Class StdcppBuilder Extends Builder
-
+	
+	Field cc_opts$
+	
 	Method New( tcc:TransCC )
 		Super.New( tcc )
 	End
@@ -30,6 +32,12 @@ Class StdcppBuilder Extends Builder
 		_trans=New CppTranslator
 	End
 	
+	Method PreConfig:Void()
+		If GetCfgVar("CC_OPTS")
+			cc_opts=cc_opts+" "+GetCfgVar("CC_OPTS")
+		Endif		
+	End
+	
 	Method MakeTarget:Void()
 	
 		Select ENV_CONFIG
@@ -37,6 +45,8 @@ Class StdcppBuilder Extends Builder
 		Case "release" SetCfgVar "RELEASE","1"
 		Case "profile" SetCfgVar "PROFILE","1"
 		End
+		
+		PreConfig()
 		
 		Local main:=LoadString( "main.cpp" )
 
@@ -65,7 +75,7 @@ Class StdcppBuilder Extends Builder
 				OPTS+=" -O3 -DNDEBUG"
 			End
 			
-			Execute "g++"+OPTS+" -o "+out+" main.cpp"+LIBS
+			Execute "g++"+OPTS+" -o "+out+" main.cpp"+LIBS+" "+cc_opts
 			
 			If tcc.opt_run
 				Execute "~q"+RealPath( out )+"~q"
