@@ -83,14 +83,20 @@ Function MatchPath:Bool( text:String,pattern:String )
 
 	text="/"+text
 	Local alts:=pattern.Split( "|" )
+	Local match:=False
 
 	For Local alt:=Eachin alts
 		If Not alt Continue
+		If alt.StartsWith( "!" ) Continue
 		
 		Local bits:=alt.Split( "*" )
 		
 		If bits.Length=1
-			If bits[0]=text Return True
+			If bits[0]=text Then
+				match=True
+				Exit
+			End If
+			
 			Continue
 		Endif
 		
@@ -104,10 +110,21 @@ Function MatchPath:Bool( text:String,pattern:String )
 			i+=bit.Length
 		Next
 
-		If i<>-1 And text[i..].EndsWith( bits[bits.Length-1] ) Return True
+		If i<>-1 And text[i..].EndsWith( bits[bits.Length-1] ) Then
+			match=True
+			Exit
+		End If
 	Next
 
-	Return False
+	If match And pattern.Find( "!" )>=0 Then
+		For Local alt:=EachIn alts
+			If alt.StartsWith( "!" ) Then
+				match = Not MatchPath( text,alt[1..] )
+			End If
+		Next
+	End If
+
+	Return match
 End
 
 Class Target
