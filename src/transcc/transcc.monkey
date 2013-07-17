@@ -95,7 +95,7 @@ Function MatchPath:Bool( text:String,pattern:String )
 			If bits[0]=text Then
 				match=True
 				Exit
-			End If
+			Endif
 			
 			Continue
 		Endif
@@ -113,16 +113,16 @@ Function MatchPath:Bool( text:String,pattern:String )
 		If i<>-1 And text[i..].EndsWith( bits[bits.Length-1] ) Then
 			match=True
 			Exit
-		End If
+		Endif
 	Next
 
 	If match And pattern.Find( "!" )>=0 Then
 		For Local alt:=EachIn alts
 			If alt.StartsWith( "!" ) Then
 				match = Not MatchPath( text,alt[1..] )
-			End If
+			Endif
 		Next
-	End If
+	Endif
 
 	Return match
 End
