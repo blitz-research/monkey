@@ -1,10 +1,20 @@
 
 //Note: OS_CHAR and OS_STR are declared in os file os.cpp
 
-int info_width;
-int info_height;
+class BBMakeMeta {
+public:
+	static int info_width;
+	static int info_height;
 
-int get_info_png( String path ){
+	static int get_info_png( String path );
+	static int get_info_gif( String path );
+	static int get_info_jpg( String path );
+};
+
+int BBMakeMeta::info_width;
+int BBMakeMeta::info_height;
+
+int BBMakeMeta::get_info_png( String path ){
 
 	if( FILE *f=_fopen( OS_STR(path),OS_STR("rb") ) ){
 		unsigned char data[32];
@@ -19,7 +29,7 @@ int get_info_png( String path ){
 	return -1;
 }
 
-int get_info_gif( String path ){
+int BBMakeMeta::get_info_gif( String path ){
 
 	if( FILE *f=_fopen( OS_STR(path),OS_STR("rb") ) ){
 		unsigned char data[32];
@@ -34,7 +44,7 @@ int get_info_gif( String path ){
 	return -1;
 }
 
-int get_info_jpg( String path ){
+int BBMakeMeta::get_info_jpg( String path ){
 
 	if( FILE *f=_fopen( OS_STR(path),OS_STR("rb") ) ){
 	
