@@ -1,16 +1,27 @@
 
 Import builder
 
-Import "makemeta.cpp"
+#If Not BRL_MAKE_META_IMPLEMENTED
+#If TARGET="stdcpp"
+#BRL_MAKE_META_IMPLEMENTED=True
+Import "makemeta.${LANG}"
+#Endif
+#Endif
+
+#If Not BRL_MAKE_META_IMPLEMENTED
+#Error "Native BBMakeMeta class not implemented"
+#Endif
 
 Extern
 
-Global info_width
-Global info_height
+Class BBMakeMeta
+	Global info_width
+	Global info_height
 
-Function get_info_png( path:String )
-Function get_info_jpg( path:String )
-Function get_info_gif( path:String )
+	Function get_info_png( path:String )
+	Function get_info_jpg( path:String )
+	Function get_info_gif( path:String )
+End
 
 Public
 
@@ -35,17 +46,17 @@ Class Html5Builder Extends Builder
 			Local ext:=ExtractExt( src ).ToLower()
 			Select ext
 			Case "png","jpg","gif"
-				info_width=0
-				info_height=0
+				BBMakeMeta.info_width=0
+				BBMakeMeta.info_height=0
 				Select ext
-				Case "png" get_info_png( src )
-				Case "jpg" get_info_jpg( src )
-				Case "gif" get_info_gif( src )
+				Case "png" BBMakeMeta.get_info_png( src )
+				Case "jpg" BBMakeMeta.get_info_jpg( src )
+				Case "gif" BBMakeMeta.get_info_gif( src )
 				End
-				If info_width=0 Or info_height=0 Die "Unable to load image file '"+src+"'."
+				If BBMakeMeta.info_width=0 Or BBMakeMeta.info_height=0 Die "Unable to load image file '"+src+"'."
 				meta.Push "["+kv.Value+"];type=image/"+ext+";"
-				meta.Push "width="+info_width+";"
-				meta.Push "height="+info_height+";"
+				meta.Push "width="+BBMakeMeta.info_width+";"
+				meta.Push "height="+BBMakeMeta.info_height+";"
 				meta.Push "\n"
 			End
 		Next
