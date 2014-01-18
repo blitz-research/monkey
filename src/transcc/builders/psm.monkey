@@ -63,7 +63,7 @@ Class PsmBuilder Extends Builder
 				Default
 					Die "Invalid music file type"
 				End
-			Else If MatchPath( r,BINARY_FILES )
+			Else
 				    cont.Push "    <Content Include=~q"+t+"~q>"
 					cont.Push "      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>"
 					cont.Push "    </Content>"

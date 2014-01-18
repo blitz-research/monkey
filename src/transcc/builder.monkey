@@ -104,18 +104,25 @@ Class Builder
 		Local cfgPath:=targetPath+"/CONFIG.MONKEY"
 		If FileType( cfgPath )=FILETYPE_FILE PreProcess cfgPath
 		
-		TEXT_FILES=GetConfigVar( "TEXT_FILES" )
-		IMAGE_FILES=GetConfigVar( "IMAGE_FILES" )
-		SOUND_FILES=GetConfigVar( "SOUND_FILES" )
-		MUSIC_FILES=GetConfigVar( "MUSIC_FILES" )
-		BINARY_FILES=GetConfigVar( "BINARY_FILES" )
-		
-		DATA_FILES=TEXT_FILES
-		If IMAGE_FILES DATA_FILES+="|"+IMAGE_FILES
-		If SOUND_FILES DATA_FILES+="|"+SOUND_FILES
-		If MUSIC_FILES DATA_FILES+="|"+MUSIC_FILES
-		If BINARY_FILES DATA_FILES+="|"+BINARY_FILES
-		DATA_FILES=DATA_FILES.Replace( ";","|" )
+		For Local kv:=EachIn GetConfigVars()
+			If kv.Key.EndsWith( "_FILES" )
+				Local value:=kv.Value.Replace( ";", "|" )
+				
+				Select kv.Key
+					Case "TEXT_FILES"
+						TEXT_FILES=value
+					Case "IMAGE_FILES"
+						IMAGE_FILES=value
+					Case "SOUND_FILES"
+						SOUND_FILES=value
+					Case "MUSIC_FILES"
+						MUSIC_FILES=value
+				End
+			
+				If DATA_FILES.Length()>0 DATA_FILES+="|"
+				DATA_FILES+=value
+			Endif
+		Next
 	
 		Local cd:=CurrentDir
 
@@ -135,7 +142,6 @@ Class Builder
 	Field IMAGE_FILES$
 	Field SOUND_FILES$
 	Field MUSIC_FILES$
-	Field BINARY_FILES$
 	
 	Method Execute:Bool( cmd:String,failHard:Bool=True )
 		Return tcc.Execute( cmd,failHard )
