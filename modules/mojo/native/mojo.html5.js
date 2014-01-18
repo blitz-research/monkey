@@ -426,6 +426,9 @@ gxtkAudio.prototype.Resume=function(){
 
 gxtkAudio.prototype.LoadSample=function( path ){
 	if( !this.okay ) return null;
+	
+	var ty=this.game.GetMetaData( path,"type" );
+	if( ty.indexOf( "sound/" )!=0 ) return null;
 
 	var audio=new Audio( this.game.PathToUrl( path ) );
 	if( !audio ) return null;
@@ -524,9 +527,10 @@ gxtkAudio.prototype.PlayMusic=function( path,flags ){
 	this.StopMusic();
 	
 	this.music=this.LoadSample( path );
-	if( !this.music ) return;
+	if( !this.music ) return -1;
 	
 	this.PlaySample( this.music,32,flags );
+	return 0;
 }
 
 gxtkAudio.prototype.StopMusic=function(){
