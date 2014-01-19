@@ -145,7 +145,7 @@ Function LoadState$()
 	Return _game.LoadState()
 End
 
-Function SaveState( state$ )
+Function SaveState$( state$ )
 	Return _game.SaveState( state )
 End
 
