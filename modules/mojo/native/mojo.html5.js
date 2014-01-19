@@ -428,7 +428,7 @@ gxtkAudio.prototype.LoadSample=function( path ){
 	if( !this.okay ) return null;
 	
 	var ty=this.game.GetMetaData( path,"type" );
-	if( ty.indexOf( "sound/" )!=0 ) return null;
+	if( ty.indexOf( "audio/" )!=0 ) return null;
 
 	var audio=new Audio( this.game.PathToUrl( path ) );
 	if( !audio ) return null;

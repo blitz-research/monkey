@@ -119,8 +119,11 @@ Class Html5Builder Extends Builder
 				meta.Push "width="+Info_Width+";"
 				meta.Push "height="+Info_Height+";"
 				meta.Push "\n"
-			Case "wav", "ogg", "mp3", "m4a"
-				meta.Push "[" + kv.Value + "];type=sound/" + ext + ";"
+			Case "wav","ogg","mp3","m4a"
+				If ext="mp3" ext="mpeg"
+				If ext="m4a" ext="x-m4a"
+			
+				meta.Push "[" + kv.Value + "];type=audio/" + ext + ";"
 				meta.Push "\n"
 			End
 		Next
