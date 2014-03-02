@@ -377,6 +377,101 @@ Function Rotate( angle# )
 	Transform Cos(angle),-Sin(angle),Sin(angle),Cos(angle),0,0
 End Function
 
+
+' -------------------------------------------------------------------------
+' mojo.graphics missing functions
+'
+' Test source in Monkey X forum:
+' http://www.monkey-x.com/Community/posts.php?topic=8066
+
+' - Shear/Skew  -------------------->> REQUIRES DECISION: What's the best name? Skew or Shear?
+Function SkewX:Void(angle:Float)
+    Transform(1,0,Tan(angle),1,0,0)
+End
+
+Function SkewY:Void(angle:Float)
+    Transform(1,Tan(angle),0,1,0,0)
+End
+
+Function ShearX:Void(angle:Float)
+    Transform(1,0,Tan(angle),1,0,0)
+End
+
+Function ShearY:Void(angle:Float)
+    Transform(1,Tan(angle),0,1,0,0)
+End
+
+
+' - Mirror
+Function MirrorX:Void()
+    Transform(1,0,0,-1,0,0)
+End
+
+Function MirrorY:Void()
+    Transform(-1,0,0,1,0,0)
+End
+
+' - 'At' functions apply a function
+'        at/around a specific point
+
+' - Shear/Skew  -------------------->> REQUIRES DECISION: What's the best name? Skew or Shear?
+Function SkewXAt:Void(x:Float, y:Float, angle:Float)
+    Translate(x, y)
+    Transform(1,0,Tan(angle),1,0,0)
+    Translate(-x, -y)
+End
+
+Function SkewYAt:Void(x:Float, y:Float, angle:Float)
+    Translate(x, y)
+    Transform(1,Tan(angle),0,1,0,0)
+    Translate(-x, -y)
+End
+
+Function ShearXAt:Void(x:Float, y:Float, angle:Float)
+    Translate(x, y)
+    Transform(1,0,Tan(angle),1,0,0)
+    Translate(-x, -y)
+End
+
+Function ShearYAt:Void(x:Float, y:Float, angle:Float)
+    Translate(x, y)
+    Transform(1,Tan(angle),0,1,0,0)
+    Translate(-x, -y)
+End
+
+
+Function RotateAt:Void(x:Float, y:Float, angle:Float)
+    Translate(x, y)
+    Rotate(angle)
+    Translate(-x, -y)
+End
+
+Function ScaleAt:Void(x:Float, y:Float, scaleX:Float, scaleY:Float)
+    Translate(x, y)
+    Scale(scaleX, scaleY)
+    Translate(-x, -y)
+End
+
+Function MirrorXAt:Void(x:Float, y:Float)
+    Translate(x, y)
+    Transform(1,0,0,-1,0,0)
+    Translate(-x, -y)
+End
+
+Function MirrorYAt:Void(x:Float, y:Float)
+    Translate(x, y)
+    Transform(-1,0,0,1,0,0)
+    Translate(-x, -y)
+End
+
+' - reset Matrix to standard
+Function ResetMatrix:Void()
+    SetMatrix(1,0,0,1,0,0)
+End
+'
+' -------------------------------------------------------------------------
+
+
 Function Cls( r#=0,g#=0,b#=0 )
 #If CONFIG="debug"
 	DebugRenderDevice
