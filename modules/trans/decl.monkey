@@ -540,6 +540,19 @@ Public
 					
 					If exprTy.EqualsType( declTy ) Continue
 					
+					Local declClass:ClassDecl, exprParentClass:ClassDecl, found:Bool
+					declClass = declTy.GetClass()
+					If exprTy.GetClass() <> Null Then exprParentClass = exprTy.GetClass().superClass
+					
+					While exprParentClass <> Null
+						If exprParentClass = declClass
+							found = True
+							Exit
+						End
+						exprParentClass = exprParentClass.superClass
+					End
+					If found Then Continue
+					
 					exact=False
 					
 					If Not explicit And exprTy.ExtendsType( declTy ) Continue
