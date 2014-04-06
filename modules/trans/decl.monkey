@@ -520,8 +520,10 @@ Public
 		Next
 		
 		Local match:FuncDecl,isexact,err$
-
+		Local matches:List<FuncDecl> = New List<FuncDecl>()
+		
 		For Local func:FuncDecl=Eachin funcs
+			
 			If Not func.CheckAccess() Continue
 			
 			Local argDecls:ArgDecl[]=func.argDecls
@@ -540,7 +542,9 @@ Public
 					
 					If exprTy.EqualsType( declTy ) Continue
 					
-					Local declClass:ClassDecl, exprParentClass:ClassDecl, found:Bool
+					exact=False
+					
+					Local declClass:ClassDecl, exprParentClass:ClassDecl, found:Bool, distance:Int
 					declClass = declTy.GetClass()
 					If exprTy.GetClass() <> Null Then exprParentClass = exprTy.GetClass().superClass
 					
@@ -551,9 +555,8 @@ Public
 						End
 						exprParentClass = exprParentClass.superClass
 					End
-					If found Then Continue
 					
-					exact=False
+					If found Continue
 					
 					If Not explicit And exprTy.ExtendsType( declTy ) Continue
 
@@ -563,32 +566,146 @@ Public
 					If Not explicit Continue
 					
 				Endif
-			
+				
 				possible=False
 				Exit
 			Next
 			
 			If Not possible Continue
 			
-			If exact
-				If isexact
-					Err "Unable to determine overload to use: "+match.ToString()+" or "+func.ToString()+"."
-				Else
-					err=""
-					match=func
-					isexact=True
-				Endif
-			Else
-				If Not isexact
-					If match 
-						err="Unable to determine overload to use: "+match.ToString()+" or "+func.ToString()+"."
-					Else
-						match=func
-					Endif
-				Endif
-			Endif
+			matches.AddLast(func)
 			
 		Next
+		
+		If matches.Count() > 1
+			
+			' get minimum arguments size
+			Local argMinLen:Int = $7FFFFFFF
+			
+			For Local func:FuncDecl = EachIn matches
+				argMinLen = Min(argMinLen, func.argDecls.Length) 
+			Next
+			
+			' setup match data
+			Local matchDists:Int[][] = New Int[matches.Count()][]
+			Local matchBests:Int[] = New Int[argMinLen]
+			Local i:Int = 0
+			
+			For Local func:FuncDecl = EachIn matches
+				matchDists[i] = New Int[argMinLen]
+				i += 1
+			Next
+			
+			' find correct match
+			For i = 0 Until argMinLen
+				matchBests[i] = $7FFFFFFF
+				
+				' find best match
+				Local closestDist:Int=$7FFFFFFF, j:Int=-1
+				
+				For Local func:FuncDecl = EachIn matches
+					j += 1
+					matchDists[j][i] = $7FFFFFFF
+					
+					Local declTy:Type=func.argDecls[i].type
+					Local exprTy:Type=argExprs[i].exprType
+					
+					' set best match if exact and bail
+					If exprTy.EqualsType( declTy )
+						'DebugStop()
+						matchBests[i] = 0
+						matchDists[j][i] = 0
+						Continue
+					End
+					
+					' attempt to find best match in upcast
+					Local declClass:ClassDecl, exprParentClass:ClassDecl, found:Bool, distance:Int, dist:Int
+					declClass = declTy.GetClass()
+					If exprTy.GetClass() <> Null Then exprParentClass = exprTy.GetClass().superClass
+					
+					While exprParentClass <> Null
+						dist += 1
+						If exprParentClass = declClass
+							found = True
+							Exit
+						End
+						exprParentClass = exprParentClass.superClass
+					End
+					
+					If found
+						If dist < matchBests[i]
+							matchBests[i] = dist
+						End
+						matchDists[j][i] = dist
+						Continue
+					End
+					
+					' attempt to find primary datatype coercion
+					If Not explicit And exprTy.ExtendsType( declTy )
+						If FloatType(exprTy)
+							If StringType(declTy)
+								If matchBests[i] > 1 matchBests[i] = 1
+								matchDists[j][i] = 1
+							End
+						ElseIf IntType(exprTy)
+							If FloatType(declTy)
+								If matchBests[i] > 1 matchBests[i] = 1
+								matchDists[j][i] = 1
+							ElseIf StringType(declTy)
+								If matchBests[i] > 2 matchBests[i] = 2
+								matchDists[j][i] = 2
+							End
+						ElseIf BoolType(exprTy)
+							If IntType(declTy)
+								If matchBests[i] > 1 matchBests[i] = 1
+								matchDists[j][i] = 1
+							End
+						Else
+							matchDists[j][i] = -1
+						End
+						Continue
+					End
+				Next
+			Next
+			
+			Local j:Int = -1
+			For Local func:FuncDecl=EachIn matches
+				j += 1
+				Local argDecls:ArgDecl[]=func.argDecls
+				
+				Local exact=True
+				
+				For Local i=0 Until argMinLen
+					
+					If matchDists[j][i] = -1 Or matchBests[i] <> matchDists[j][i]
+						exact = False
+						Exit
+					End
+					
+				Next
+				
+				If exact
+					If isexact
+						Err "Unable to determine overload to use: "+match.ToString()+" or "+func.ToString()+"."
+					Else
+						err=""
+						match=func
+						isexact=True
+					Endif
+				Else
+					If Not isexact
+						If match
+							err="Unable to determine overload to use: "+match.ToString()+" or "+func.ToString()+"."
+						Else
+							match=func
+						Endif
+					Endif
+				Endif
+				
+			Next
+		ElseIf matches.Count() = 1
+			match = matches.First()
+		End
 		
 		If Not isexact
 			If err Err err
