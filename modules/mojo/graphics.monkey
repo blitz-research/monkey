@@ -137,6 +137,14 @@ Class Image
 		device.WritePixels2 surface,pixels,x,y,width,height,offset,pitch
 	End
 	
+	Method GetSurface:Surface()
+		Return surface
+	End
+	
+	Method GetSurfaceRegion:Int[] (frame:Int = 0)
+		Return[frames[frame].x, frames[frame].y, width, height]
+	End
+	
 Private
 	Const FullFrame=65536
 
