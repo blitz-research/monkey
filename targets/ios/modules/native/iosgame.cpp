@@ -1,6 +1,12 @@
 
 //***** monkeygame.h *****
 
+class AppDelegate : public Object {
+public:
+	virtual void applicationWillResignActive(UIApplication *application);
+	virtual void applicationDidBecomeActive(UIApplication *application);
+}
+
 class BBIosGame : public BBGame{
 public:
 	BBIosGame();
@@ -25,6 +31,10 @@ public:
 	
 	virtual BBMonkeyAppDelegate *GetUIAppDelegate();
 	
+	virtual void AddAppDelegate(AppDelegate *appDelegate);
+	virtual void RemoveAppDelegate(AppDelegate *appDelegate);
+	virtual NSMutableArray *GetAppDelegates();
+	
 	//***** INTERNAL *****
 	
 	virtual void StartGame();
@@ -42,6 +52,7 @@ protected:
 	
 	UIApplication *_app;
 	BBMonkeyAppDelegate *_appDelegate;
+	NSMutableArray *_appDelegates;
 	
 	bool _displayLinkAvail;
 	UIAccelerometer *_accelerometer;
@@ -79,7 +90,8 @@ _displayLink( 0 ){
 	
 	_app=[UIApplication sharedApplication];
 	_appDelegate=(BBMonkeyAppDelegate*)[_app delegate];
-	
+	_appDelegates = [NSMutableArray arrayWithCapacity:1];
+
 	NSString *reqSysVer=@"3.1";
 	NSString *currSysVer=[[UIDevice currentDevice] systemVersion];
 	if( [currSysVer compare:reqSysVer options:NSNumericSearch]!=NSOrderedAscending ) _displayLinkAvail=true;
@@ -360,6 +372,18 @@ AVAudioPlayer *BBIosGame::OpenAudioPlayer( String path ){
 
 BBMonkeyAppDelegate *BBIosGame::GetUIAppDelegate(){
 	return _appDelegate;
+}
+
+void BBIosGame::AddAppDelegate(AppDelegate *appDelegate) {
+	[_appDelegates addObject:appDelegate];
+}
+
+void BBIosGame::RemoveAppDelegate(AppDelegate *appDelegate) {
+	[_appDelegates removeObject:appDelegate];
+}
+
+NSMutableArray *BBIosGame::GetAppDelegates() {
+	return _appDelegates;
 }
 
 //***** INTERNAL *****
@@ -704,11 +728,17 @@ void BBIosGame::ViewDisappeared(){
 -(void)applicationWillResignActive:(UIApplication*)application{
 
 	game->SuspendGame();
+	for (AppDelegate *appDelegate in game->GetAppDelegates()) {
+		appDelegate->applicationWillResignActive(application);
+	}
 }
 
 -(void)applicationDidBecomeActive:(UIApplication*)application{
 
 	game->ResumeGame();
+	for (AppDelegate *appDelegate in game->GetAppDelegates()) {
+		appDelegate->applicationDidBecomeActive(application);
+	}
 }
 
 -(BOOL)textFieldShouldEndEditing:(UITextField*)textField{
