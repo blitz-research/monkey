@@ -1,11 +1,14 @@
 
 //***** monkeygame.h *****
 
-class AppDelegate : public Object {
+class IosAppDelegate : public Object {
 public:
-	virtual void applicationWillResignActive(UIApplication *application);
-	virtual void applicationDidBecomeActive(UIApplication *application);
-}
+	virtual void applicationWillResignActive(UIApplication *application) {};
+	virtual void applicationDidBecomeActive(UIApplication *application) {};
+	virtual void applicationDidEnterBackground(UIApplication *application) {};
+	virtual void applicationWillEnterForeground(UIApplication *application) {};
+	virtual void applicationWillTerminate(UIApplication *application) {};
+};
 
 class BBIosGame : public BBGame{
 public:
@@ -31,9 +34,9 @@ public:
 	
 	virtual BBMonkeyAppDelegate *GetUIAppDelegate();
 	
-	virtual void AddAppDelegate(AppDelegate *appDelegate);
-	virtual void RemoveAppDelegate(AppDelegate *appDelegate);
-	virtual NSMutableArray *GetAppDelegates();
+	virtual void AddIosAppDelegate(IosAppDelegate *appDelegate);
+	virtual void RemoveIosAppDelegate(IosAppDelegate *appDelegate);
+	virtual NSMutableArray *GetIosAppDelegates();
 	
 	//***** INTERNAL *****
 	
@@ -52,7 +55,7 @@ protected:
 	
 	UIApplication *_app;
 	BBMonkeyAppDelegate *_appDelegate;
-	NSMutableArray *_appDelegates;
+	NSMutableArray *_iOSappDelegates;
 	
 	bool _displayLinkAvail;
 	UIAccelerometer *_accelerometer;
@@ -90,7 +93,7 @@ _displayLink( 0 ){
 	
 	_app=[UIApplication sharedApplication];
 	_appDelegate=(BBMonkeyAppDelegate*)[_app delegate];
-	_appDelegates = [NSMutableArray arrayWithCapacity:1];
+	_iOSappDelegates = [[NSMutableArray array] retain];
 
 	NSString *reqSysVer=@"3.1";
 	NSString *currSysVer=[[UIDevice currentDevice] systemVersion];
@@ -374,16 +377,16 @@ BBMonkeyAppDelegate *BBIosGame::GetUIAppDelegate(){
 	return _appDelegate;
 }
 
-void BBIosGame::AddAppDelegate(AppDelegate *appDelegate) {
-	[_appDelegates addObject:appDelegate];
+void BBIosGame::AddIosAppDelegate(IosAppDelegate *appDelegate) {
+	[_iOSappDelegates addObject:[NSValue valueWithPointer:appDelegate]];
 }
 
-void BBIosGame::RemoveAppDelegate(AppDelegate *appDelegate) {
-	[_appDelegates removeObject:appDelegate];
+void BBIosGame::RemoveIosAppDelegate(IosAppDelegate *appDelegate) {
+	[_iOSappDelegates removeObject:[NSValue valueWithPointer:appDelegate]];
 }
 
-NSMutableArray *BBIosGame::GetAppDelegates() {
-	return _appDelegates;
+NSMutableArray *BBIosGame::GetIosAppDelegates() {
+	return _iOSappDelegates;
 }
 
 //***** INTERNAL *****
@@ -728,7 +731,8 @@ void BBIosGame::ViewDisappeared(){
 -(void)applicationWillResignActive:(UIApplication*)application{
 
 	game->SuspendGame();
-	for (AppDelegate *appDelegate in game->GetAppDelegates()) {
+	for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
 		appDelegate->applicationWillResignActive(application);
 	}
 }
@@ -736,8 +740,30 @@ void BBIosGame::ViewDisappeared(){
 -(void)applicationDidBecomeActive:(UIApplication*)application{
 
 	game->ResumeGame();
-	for (AppDelegate *appDelegate in game->GetAppDelegates()) {
+	for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
 		appDelegate->applicationDidBecomeActive(application);
+	}
+}
+
+-(void)applicationDidEnterBackground:(UIApplication*)application{
+	for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
+		appDelegate->applicationDidEnterBackground(application);
+	}
+}
+
+-(void)applicationWillEnterForeground:(UIApplication*)application{
+	for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
+		appDelegate->applicationWillEnterForeground(application);
+	}
+}
+
+-(void)applicationWillTerminate:(UIApplication*)application{
+	for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
+		appDelegate->applicationWillTerminate(application);
 	}
 }
 
