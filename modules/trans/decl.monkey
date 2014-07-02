@@ -1378,6 +1378,8 @@ Class AppDecl Extends ScopeDecl
 		Endif
 		
 		FinalizeClasses
+		'note:Block deadcode elimination for dll functions
+		ResurrectDllFunctions
 	End
 	
 	Method FinalizeClasses()
