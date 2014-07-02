@@ -35,13 +35,14 @@ Class Toker
 	Method _init()
 		If _keywords Return
 		
+		'note:Introduce a new keyword which is excluded from dead code elimination and triggers dll constrction
 		Const keywords:="void strict "+
 		"public private property "+
 		"bool int float string array object mod continue exit "+
 		"include import module extern "+
 		"new self super eachin true false null not "+
 		"extends abstract final select case default "+
-		"const local global field method function class "+
+		"const local global field method function class dllfunction " +
 		"and or shl shr end if then else elseif endif while wend repeat until forever "+
 		"for to step next return "+
 		"interface implements inline alias try catch throw throwable"
