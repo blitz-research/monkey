@@ -51,8 +51,10 @@ Class IosBuilder Extends Builder
 			Local dir:=ExtractDir( path )
 			Local name:=StripDir( path )
 			Select ExtractExt( name )
-			Case "a","framework"
+			Case "a"
 				buf.Push "~t~t"+id+" = {isa = PBXBuildFile; fileRef = "+fileRef+"; };"
+			Case "system_framework","custom_framework"
+				buf.Push "~t~t"+id+" = {isa = PBXBuildFile; fileRef = "+StripExt(fileRef)+".framework; };"
 			End
 		Next
 		If buf.Length buf.Push ""
@@ -64,16 +66,19 @@ Class IosBuilder Extends Builder
 		For Local it:=Eachin _fileRefs
 			Local path:=it.Key
 			Local id:=it.Value
-			Local dir:=ExtractDir( path )
 			Local name:=StripDir( path )
 			Select ExtractExt( name )
 			Case "a"
 				buf.Push "~t~t"+id+" = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = ~q"+name+"~q; sourceTree = ~q<group>~q; };"
 			Case "h"				
 				buf.Push "~t~t"+id+" = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "+name+"; sourceTree = ~q<group>~q; };"
-			Case "framework"
-				If dir Die "System frameworks only supported"
+			Case "system_framework"
+				name = StripExt(name)+".framework"
 				buf.Push "~t~t"+id+" = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "+name+"; path = System/Library/Frameworks/"+name+"; sourceTree = SDKROOT; };"
+			Case "custom_framework"
+				name = StripExt(name)+".framework"
+				path = StripExt(path)+".framework"
+				buf.Push "~t~t"+id+" = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "+name+"; path = "+path+"; sourceTree = ~q<group>~q; };"
 			End				
 		Next
 		If buf.Length buf.Push ""
@@ -86,7 +91,7 @@ Class IosBuilder Extends Builder
 			Local path:=it.Key
 			Local id:=it.Value
 			Select ExtractExt( path )
-			Case "a","framework"
+			Case "a","system_framework","custom_framework"
 				buf.Push "~t~t~t~t"+id
 			End
 		Next
@@ -100,7 +105,7 @@ Class IosBuilder Extends Builder
 			Local path:=it.Key
 			Local id:=it.Value
 			Select ExtractExt( path )
-			Case "framework"
+			Case "system_framework","custom_framework"
 				buf.Push "~t~t~t~t"+id
 			End
 		Next
@@ -228,7 +233,25 @@ Class IosBuilder Extends Builder
 					CopyFile lib,path
 					AddBuildFile path
 				Case "framework"
-					AddBuildFile lib
+					'check if this is a system framework or custom one to be copied across...
+					If FileType(lib) = FILETYPE_DIR And lib.Find("System/Library/Frameworks/") <> 0
+						'custom framework
+						Local path:="libs/"+StripDir( lib )
+						
+						'frameworks are folders so we need to copy entire structure over!
+						CopyDir(lib,path,True,True)
+						
+						'add special framework tagged as custom (this will get fixed later)
+						AddBuildFile StripExt(path)+".custom_framework"
+					Else
+						'system framework, check here for invalid framework
+						If ExtractDir(lib)
+							Die "Invalid framework:"+lib
+						Else
+							'tag the framework as system (this will get fixed later)
+							AddBuildFile StripExt(lib)+".system_framework"
+						EndIf
+					Endif
 				Default
 					Die "Unrecognized lib file type:"+lib
 				End
