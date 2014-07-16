@@ -1,3 +1,5 @@
+*.build*
+
 /bin/*
 !/bin/*.txt
 
@@ -10,6 +12,7 @@
 /src/createrelease
 /src/ted-build-*
 /src/ted/ted.pro.user*
+*.build*
 
 /docs/html
 

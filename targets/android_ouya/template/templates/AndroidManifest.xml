@@ -26,7 +26,8 @@
 			android:screenOrientation="${ANDROID_SCREEN_ORIENTATION}"
 			android:configChanges="keyboardHidden|orientation|screenSize"
 			android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-			android:launchMode="singleTop">
+			android:launchMode="singleTop"
+			${ANDROID_MAINFEST_ACTIVITY_PROPERTIES}>
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
