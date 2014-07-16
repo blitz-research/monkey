@@ -29,12 +29,8 @@ End
 
 Private
 
-Function FixPath:String( path:String )
-	Return BBFileSystem.FixPath( path )
-End
-
 Function _DeleteDir:Bool( path:String )
-	Return BBFileSystem.DeleteDir( FixPath( path ) )
+	Return BBFileSystem.DeleteDir(FixPath(path))
 End
 
 Function _LoadDir:String[]( path:String )
@@ -46,6 +42,10 @@ Public
 Const FILETYPE_NONE:=0
 Const FILETYPE_FILE:=1
 Const FILETYPE_DIR:=2
+
+Function FixPath:String(path:String)
+	Return BBFileSystem.FixPath( path )
+End
 
 Function FileType:Int( path:String )
 	Return BBFileSystem.FileType( FixPath( path ) )
