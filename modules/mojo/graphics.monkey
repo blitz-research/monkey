@@ -492,6 +492,32 @@ Function DrawImage( image:Image,x#,y#,rotation#,scaleX#,scaleY#,frame=0 )
 	PopMatrix
 End
 
+Function DrawImage( image:Image,x#,y#,m#[],frame=0 )
+
+	#If CONFIG="debug"
+	DebugRenderDevice
+	If frame<0 Or frame>=image.frames.Length Error "Invalid image frame"
+	#End
+
+	Local f:Frame=image.frames[frame]
+
+	PushMatrix
+
+	Translate x,y
+	Transform m
+	Translate -image.tx,-image.ty
+
+	context.Validate
+	
+	If image.flags & Image.FullFrame
+		renderDevice.DrawSurface image.surface,0,0
+	Else
+		renderDevice.DrawSurface2 image.surface,0,0,f.x,f.y,image.width,image.height
+	Endif
+
+	PopMatrix
+End
+
 Function DrawImageRect( image:Image,x#,y#,srcX,srcY,srcWidth,srcHeight,frame=0 )
 
 #If CONFIG="debug"
@@ -522,6 +548,29 @@ Function DrawImageRect( image:Image,x#,y#,srcX,srcY,srcWidth,srcHeight,rotation#
 	Translate x,y
 	Rotate rotation
 	Scale scaleX,scaleY
+	Translate -image.tx,-image.ty
+
+	context.Validate
+	
+	renderDevice.DrawSurface2 image.surface,0,0,srcX+f.x,srcY+f.y,srcWidth,srcHeight
+
+	PopMatrix
+End
+
+Function DrawImageRect( image:Image,x#,y#,srcX,srcY,srcWidth,srcHeight,m#[],frame=0 )
+
+	#If CONFIG="debug"
+	DebugRenderDevice
+	If frame<0 Or frame>=image.frames.Length Error "Invalid image frame"
+	If srcX<0 Or srcY<0 Or srcX+srcWidth>image.width Or srcY+srcHeight>image.height Error "Invalid image rectangle"
+	#End
+
+	Local f:Frame=image.frames[frame]
+	
+	PushMatrix
+
+	Translate x,y
+	Transform m
 	Translate -image.tx,-image.ty
 
 	context.Validate
