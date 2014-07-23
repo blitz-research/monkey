@@ -492,31 +492,6 @@ Function DrawImage( image:Image,x#,y#,rotation#,scaleX#,scaleY#,frame=0 )
 	PopMatrix
 End
 
-
-Function DrawImage( image:Image,x#,y#,m#[],frame=0 )
-	#If CONFIG="debug"
-	DebugRenderDevice
-	If frame<0 Or frame>=image.frames.Length Error "Invalid image frame"
-	#End
-
-	Local f:Frame=image.frames[frame]
-
-	PushMatrix
-
-	Translate x,y
-	Transform m
-
-	context.Validate
-	
-	If image.flags & Image.FullFrame
-		renderDevice.DrawSurface image.surface,0,0
-	Else
-		renderDevice.DrawSurface2 image.surface,0,0,f.x,f.y,image.width,image.height
-	Endif
-
-	PopMatrix
-End
-
 Function DrawImageRect( image:Image,x#,y#,srcX,srcY,srcWidth,srcHeight,frame=0 )
 
 #If CONFIG="debug"
