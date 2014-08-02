@@ -10,7 +10,7 @@ Import brl.gametarget
 #Endif
 
 #If Not MOJO_DRIVER_IMPLEMENTED
-#If TARGET="android" Or TARGET="flash" Or TARGET="glfw" Or TARGET="html5" Or TARGET="ios" Or TARGET="psm" Or TARGET="winrt" Or TARGET="xna"
+#If TARGET="android" Or TARGET="flash" Or TARGET="glfw" Or TARGET="html5" Or TARGET="ios" Or TARGET="psm" Or TARGET="winrt" Or TARGET="xna" Or TARGET="glfw3"
 Import "native/mojo.${TARGET}.${LANG}"
 #MOJO_DRIVER_IMPLEMENTED=True
 #Endif

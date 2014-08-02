@@ -18,6 +18,7 @@
 /modules/mojo/native/*
 !/modules/mojo/native/mojo.html5.js
 !/modules/mojo/native/mojo.glfw.cpp
+!/modules/mojo/native/mojo.glfw3.cpp
 !/modules/mojo/native/asyncimageloader.js
 !/modules/mojo/native/asyncsoundloader.js
 
@@ -28,6 +29,7 @@
 !/targets/cpptool
 !/targets/flash
 !/targets/glfw
+!/targets/glfw3
 !/targets/html5
 !/targets/ios
 !/targets/psm
