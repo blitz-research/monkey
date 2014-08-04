@@ -518,6 +518,11 @@ void BBGlfwGame::SetGlfwWindow( int width,int height,bool fullscreen ){
 	glfwSetMouseButtonCallback(_glfwWindow, OnMouseButton);
 	glfwSetCursorPosCallback(_glfwWindow, OnMousePos);
 	glfwSetWindowCloseCallback(_glfwWindow,	OnWindowClose);
+	
+	// clear window to stop white flicker
+	glClearColor(0,0,0,1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glfwSwapBuffers(_glfwWindow);
 }
 
 Array<BBGlfwVideoMode*> BBGlfwGame::GetGlfwVideoModes(){
@@ -602,17 +607,66 @@ void BBGlfwGame::Run(){
 	SetGlfwWindow( 1024,768,false );
 #endif
 	StartGame();
+
+	// init thread stuff for delays
+	mtx_t mutex;
+	mtx_init(&mutex, mtx_plain);
+	cnd_t cond;
+	cnd_init(&cond);
 	
 	while( !glfwWindowShouldClose(_glfwWindow) ){
 		RenderGame();
 		glfwSwapBuffers(_glfwWindow);
 		
+		// delay if necessary (only if the update rate is really low!)
+		if(_nextUpdate) {
+			double delay = _nextUpdate - glfwGetTime();
+			if(delay > 0) {
+				struct timespec ts;
+				clock_gettime(TIME_UTC, &ts);
+				ts.tv_sec += (long)delay;
+				ts.tv_nsec += (long)((delay - (long)delay) * 1000000000L);
+				while(ts.tv_nsec > 1000000000L) {
+					ts.tv_nsec -= 1000000000L;
+					ts.tv_sec++;
+				}
+				mtx_lock(&mutex);
+				cnd_timedwait(&cond, &mutex, &ts);
+				mtx_unlock(&mutex);
+			}
+		}
+
 		//Update user events
 		UpdateEvents();
 
 		//App suspended?		
 		if( _suspended ) continue;
 
-		UpdateGame();
+		//'Go nuts' mode!
+		if( !_updateRate ){
+			UpdateGame();
+			continue;
+		}
+		
+		//Reset update timer?
+		if( !_nextUpdate ) _nextUpdate=glfwGetTime();
+		
+		//Catch up updates...
+		int i=0;
+		for( ;i<4;++i ){
+		
+			UpdateGame();
+			if( !_nextUpdate ) break;
+			
+			_nextUpdate+=_updatePeriod;
+			
+			if( _nextUpdate>glfwGetTime() ) break;
+		}
+		
+		if( i==4 ) _nextUpdate=0;
 	}
+	
+	// destroy the thread stuff
+	cnd_destroy(&cond);
+	mtx_destroy(&mutex);
 }

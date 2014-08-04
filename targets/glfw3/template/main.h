@@ -32,6 +32,8 @@
 #include <pthread.h>
 #endif
 
+#include <tinycthread.h>
+
 // Graphics/Audio stuff
 
 //OpenGL...
