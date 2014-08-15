@@ -608,16 +608,19 @@ void BBGlfwGame::Run(){
 #endif
 	StartGame();
 
+#ifdef USE_THREADED_DELAY
 	// init thread stuff for delays
 	mtx_t mutex;
 	mtx_init(&mutex, mtx_plain);
 	cnd_t cond;
 	cnd_init(&cond);
+#endif
 	
 	while( !glfwWindowShouldClose(_glfwWindow) ){
 		RenderGame();
 		glfwSwapBuffers(_glfwWindow);
 		
+#ifdef USE_THREADED_DELAY
 		// delay if necessary (only if the update rate is really low!)
 		if(_nextUpdate) {
 			double delay = _nextUpdate - glfwGetTime();
@@ -635,6 +638,7 @@ void BBGlfwGame::Run(){
 				mtx_unlock(&mutex);
 			}
 		}
+#endif
 
 		//Update user events
 		UpdateEvents();
@@ -666,7 +670,9 @@ void BBGlfwGame::Run(){
 		if( i==4 ) _nextUpdate=0;
 	}
 	
+#ifdef USE_THREADED_DELAY
 	// destroy the thread stuff
 	cnd_destroy(&cond);
 	mtx_destroy(&mutex);
+#endif
 }
