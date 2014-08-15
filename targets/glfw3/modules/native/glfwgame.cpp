@@ -495,6 +495,7 @@ void BBGlfwGame::SetGlfwWindow( int width,int height,bool fullscreen ){
 	
 	glfwWindowHint( GLFW_REFRESH_RATE,60 );
 	glfwWindowHint( GLFW_RESIZABLE,CFG_GLFW_WINDOW_RESIZABLE ? GL_TRUE : GL_FALSE );
+	glfwWindowHint( GLFW_DECORATED, CFG_GLFW_WINDOW_BORDERLESS ? GL_FALSE : GL_TRUE );
 	
 	_glfwWindow = glfwCreateWindow(width, height, _STRINGIZE(CFG_GLFW_WINDOW_TITLE), fullscreen?monitor:NULL, NULL);
 	glfwMakeContextCurrent(_glfwWindow);
