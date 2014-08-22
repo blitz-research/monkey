@@ -146,6 +146,7 @@ Class TransCC
 	Field opt_target:String
 	Field opt_modpath:String
 	Field opt_builddir:String
+	Field opt_host:String
 	
 	'config file
 	Field ANDROID_PATH:String
