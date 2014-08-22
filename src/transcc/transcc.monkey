@@ -297,6 +297,8 @@ Class TransCC
 					opt_modpath=rhs
 				Case "-builddir"
 					opt_builddir=rhs
+				Case "-host"
+					opt_host = rhs.ToLower()
 				Default
 					Die "Unrecognized command line option: "+arg
 				End
