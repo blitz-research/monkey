@@ -4,7 +4,7 @@
 'Use brl.filesystem and brl.filepath instead!
 '
 #If Not BRL_OS_IMPLEMENTED
-#If TARGET="stdcpp" Or TARGET="glfw"
+#If TARGET="stdcpp" Or TARGET="glfw" Or TARGET="glfw3"
 #BRL_OS_IMPLEMENTED=True
 Import "native/os.cpp"
 #Endif
