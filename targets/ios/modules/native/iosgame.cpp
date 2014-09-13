@@ -1,7 +1,7 @@
 
 //***** monkeygame.h *****
 
-class IosAppDelegate : public Object {
+class IosAppDelegate {
 public:
 	virtual void applicationWillResignActive(UIApplication *application) {};
 	virtual void applicationDidBecomeActive(UIApplication *application) {};
