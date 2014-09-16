@@ -8,6 +8,7 @@ public:
 	virtual void applicationDidEnterBackground(UIApplication *application) {};
 	virtual void applicationWillEnterForeground(UIApplication *application) {};
 	virtual void applicationWillTerminate(UIApplication *application) {};
+	virtual bool openURL(NSURL *url, NSString *sourceApplication) {};
 };
 
 class BBIosGame : public BBGame{
@@ -765,6 +766,15 @@ void BBIosGame::ViewDisappeared(){
 		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
 		appDelegate->applicationWillTerminate(application);
 	}
+}
+
+-(BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+	bool returnValue = NO;
+	for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
+		returnValue |= appDelegate->openURL(url, sourceApplication);
+	}
+	return returnValue;
 }
 
 -(BOOL)textFieldShouldEndEditing:(UITextField*)textField{
