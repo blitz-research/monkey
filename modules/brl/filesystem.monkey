@@ -15,6 +15,7 @@ Extern Private
 Class BBFileSystem
 
 	Function FixPath:String( path:String )
+	Function RealPath:String( path:String )
 	Function FileType:Int( path:String )
 	Function FileSize:Int( path:String )
 	Function FileTime:Int( path:String )
@@ -29,8 +30,12 @@ End
 
 Private
 
+Function FixPath:String( path:String )
+	Return BBFileSystem.FixPath( path )
+End
+
 Function _DeleteDir:Bool( path:String )
-	Return BBFileSystem.DeleteDir(FixPath(path))
+	Return BBFileSystem.DeleteDir( FixPath( path ) )
 End
 
 Function _LoadDir:String[]( path:String )
@@ -43,10 +48,6 @@ Const FILETYPE_NONE:=0
 Const FILETYPE_FILE:=1
 Const FILETYPE_DIR:=2
 
-Function FixPath:String(path:String)
-	Return BBFileSystem.FixPath( path )
-End
-
 Function FileType:Int( path:String )
 	Return BBFileSystem.FileType( FixPath( path ) )
 End
@@ -57,6 +58,10 @@ End
 
 Function FileTime:Int( path:String )
 	Return BBFileSystem.FileTime( FixPath( path ) )
+End
+
+Function RealPath:String( path:String )
+	Return BBFileSystem.RealPath( FixPath( path ) )
 End
 
 Function CreateFile:Bool( path:String )
@@ -157,3 +162,4 @@ Function LoadDir:String[]( path:String,recursive:Bool=False,hidden:Bool=False )
 
 	Return files.ToArray()
 End
+

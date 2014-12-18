@@ -49,10 +49,9 @@ Class AndroidBuilder Extends Builder
 		
 		SetEnv "ANDROID_SDK_DIR",tcc.ANDROID_PATH.Replace( "\","\\" )
 		
-		SetConfigVar "ANDROID_MAINFEST_MAIN",GetConfigVar( "ANDROID_MANIFEST_MAIN" ).Replace( ";","~n" )+"~n"
-		SetConfigVar "ANDROID_MAINFEST_APPLICATION", GetConfigVar("ANDROID_MANIFEST_APPLICATION").Replace(";", "~n") + "~n"
-		SetConfigVar "ANDROID_MAINFEST_ACTIVITY_PROPERTIES", GetConfigVar("ANDROID_MAINFEST_ACTIVITY_PROPERTIES").Replace(";", "~n") + "~n"
-		SetConfigVar "ANDROID_MAINFEST_ACTIVITY", GetConfigVar("ANDROID_MAINFEST_ACTIVITY").Replace(";", "~n") + "~n"
+		SetConfigVar "ANDROID_MANIFEST_MAIN",GetConfigVar( "ANDROID_MANIFEST_MAIN" ).Replace( ";","~n" )+"~n"
+		SetConfigVar "ANDROID_MANIFEST_APPLICATION",GetConfigVar( "ANDROID_MANIFEST_APPLICATION" ).Replace( ";","~n" )+"~n"
+		SetConfigVar "ANDROID_MANIFEST_ACTIVITY",GetConfigVar( "ANDROID_MAINFEST_ACTIVITY" ).Replace( ";","~n" )+"~n"
 		
 		'create package
 		Local jpath:="src"
@@ -125,7 +124,19 @@ Class AndroidBuilder Extends Builder
 		For Local lib:=Eachin GetConfigVar( "LIBS" ).Split( ";" )
 			Select ExtractExt( lib )
 			Case "jar","so"
-				CopyFile lib,"libs/"+StripDir( lib )
+				Local tdir:=""
+				If lib.Contains( "/" )
+					tdir=ExtractDir( lib )
+					If tdir.Contains( "/" ) tdir=StripDir( tdir )
+					Select tdir
+					Case "x86","mips","armeabi","armeabi-v7a"
+						CreateDir "libs/"+tdir
+						tdir+="/"
+					Default
+						tdir=""
+					End
+				Endif
+				CopyFile lib,"libs/"+tdir+StripDir( lib )
 			End
 		Next
 
@@ -156,7 +167,7 @@ Class AndroidBuilder Extends Builder
 			
 			If GetConfigVar( "ANDROID_SIGN_APP" )="1" antcfg="release"
 
-			If Not (Execute( "ant clean",False ) And Execute( "ant "+antcfg+" install",False ))
+			If Not (Execute( tcc.ANT_PATH+"/bin/ant clean",False ) And Execute( tcc.ANT_PATH+"/bin/ant "+antcfg+" install",False ))
 
 				Die "Android build failed."
 				

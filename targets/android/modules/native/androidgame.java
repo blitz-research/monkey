@@ -470,7 +470,7 @@ class BBAndroidGame extends BBGame implements GLSurfaceView.Renderer,SensorEvent
 			File f=Environment.getExternalStorageDirectory();
 			if( f!=null ) return f+"/"+path.substring(18);
 		}
-		return "";
+		return PathToAssetPath(path);
 	}
 
 	String PathToAssetPath( String path ){
@@ -786,11 +786,10 @@ class AndroidGame extends Activity{
 	}
 	
 	@Override
-	public void onNewIntent(Intent intent){
-		super.onNewIntent(intent);
+	public void onNewIntent( Intent intent ){
+		super.onNewIntent( intent );
 		for( ActivityDelegate delegate : _game._activityDelegates ){
-			delegate.onNewIntent(intent);
+			delegate.onNewIntent( intent );
 		}
 	}
 }
-
