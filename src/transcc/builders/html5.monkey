@@ -184,7 +184,7 @@ Class Html5Builder Extends Builder
 		header += "<!-- lib imports end -->~n"
 		
 		'process header in container doc
-		containerDoc = ReplaceBlock(containerDoc, "HEAD", scriptTags,"~n<!--")
+		containerDoc = ReplaceBlock(containerDoc, "HEAD", header, "~n<!--")
 		SaveString(containerDoc, "MonkeyGame.html")
 		
 		'modify the main script src
