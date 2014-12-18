@@ -134,11 +134,60 @@ Class Html5Builder Extends Builder
 	End
 	
 	Method MakeTarget:Void()
-
 		CreateDataDir "data"
 
 		Local meta:="var META_DATA=~q"+MetaData()+"~q;~n"
 		
+		'modify the container
+		Local containerDoc:= LoadString("MonkeyGame.html")
+		
+		'build header
+		Local scriptTags:= ""
+		
+		'add lib imports
+		Local libs:= GetConfigVar("LIBS")
+		If libs
+			scriptTags = ""
+			'iterate over each lib
+			For Local lib:=Eachin libs.Split( ";" )
+				If Not lib Continue
+				
+				'check to see if thi
+				Local scriptPath:= lib.ToLower()
+				If scriptPath.StartsWith("http://") or scriptPath.StartsWith("https://")
+					'remote lib
+					'do nothing here yet but keep for later
+					scriptPath = lib
+				Else
+					'local lib, check that it exists!!!
+					Local pathOld:= lib
+					If FileType(pathOld) <> FILETYPE_FILE
+						'nope, so just assume the lib will be copied manually...
+						scriptPath = pathOld
+					Else
+						'yes, so copy it into build folder
+						Local pathNew:= StripDir(lib)
+						CCopyFile(pathOld, pathNew)
+						
+						scriptPath = pathNew
+					EndIf
+				EndIf
+				
+				'add lib to html output
+				scriptTags += "<script language=~qjavascript~q src=~q" + scriptPath + "~q>Javascript lib not supported!</script>~n"
+			Next
+		EndIf
+		
+		'build header
+		Local header:= "<!-- lib imports start -->~n"
+		header += scriptTags + "~n"
+		header += "<!-- lib imports end -->~n"
+		
+		'process header in container doc
+		containerDoc = ReplaceBlock(containerDoc, "HEAD", scriptTags,"~n<!--")
+		SaveString(containerDoc, "MonkeyGame.html")
+		
+		'modify the main script src
 		Local main:=LoadString( "main.js" )
 		
 		main=ReplaceBlock( main,"TRANSCODE",transCode )
