@@ -120,6 +120,8 @@ static int Pow2Size( int n ){
 gxtkGraphics::gxtkGraphics(){
 
 	width=height=0;
+	vertCount=0;
+	
 #ifdef _glfw3_h_
 	GLFWwindow *window=BBGlfwGame::GlfwGame()->GetGLFWwindow();
 	if( window ) glfwGetWindowSize( BBGlfwGame::GlfwGame()->GetGLFWwindow(),&width,&height );
@@ -319,7 +321,7 @@ int gxtkGraphics::DrawPoint( float x,float y ){
 	
 	float *vp=Begin( 1,1,0 );
 	
-	vp[0]=x;vp[1]=y;(int&)vp[4]=colorARGB;
+	vp[0]=x+.5f;vp[1]=y+.5f;(int&)vp[4]=colorARGB;
 
 	return 0;	
 }
@@ -334,8 +336,8 @@ int gxtkGraphics::DrawLine( float x0,float y0,float x1,float y1 ){
 	
 	float *vp=Begin( 2,2,0 );
 
-	vp[0]=x0;vp[1]=y0;(int&)vp[4]=colorARGB;
-	vp[5]=x1;vp[6]=y1;(int&)vp[9]=colorARGB;
+	vp[0]=x0+.5f;vp[1]=y0+.5f;(int&)vp[4]=colorARGB;
+	vp[5]=x1+.5f;vp[6]=y1+.5f;(int&)vp[9]=colorARGB;
 	
 	return 0;
 }
@@ -534,8 +536,6 @@ int gxtkGraphics::ReadPixels( Array<int> pixels,int x,int y,int width,int height
 
 int gxtkGraphics::WritePixels2( gxtkSurface *surface,Array<int> pixels,int x,int y,int width,int height,int offset,int pitch ){
 
-	Flush();
-	
 	surface->SetSubData( x,y,width,height,(unsigned*)&pixels[offset],pitch );
 	
 	return 0;
@@ -821,15 +821,6 @@ static void FlushDiscarded(){
 int gxtkChannel::AL_Source(){
 	if( source ) return source;
 
-	/*	
-	static int n;
-	if( ++n<17 ){
-		alGetError();
-		alGenSources( 1,&source );
-		if( alGetError()==AL_NO_ERROR ) return source;
-	}
-	*/
-	
 	alGetError();
 	alGenSources( 1,&source );
 	if( alGetError()==AL_NO_ERROR ) return source;
@@ -851,8 +842,15 @@ int gxtkChannel::AL_Source(){
 gxtkAudio::gxtkAudio(){
 
 	audio=this;
+	
+	alcDevice=alcOpenDevice( 0 );
+	if( !alcDevice ){
+		alcDevice=alcOpenDevice( "Generic Hardware" );
+		if( !alcDevice ) alcDevice=alcOpenDevice( "Generic Software" );
+	}
 
-	if( alcDevice=alcOpenDevice( 0 ) ){
+	bbPrint( "opening openal device" );
+	if( alcDevice ){
 		if( alcContext=alcCreateContext( alcDevice,0 ) ){
 			if( alcMakeContextCurrent( alcContext ) ){
 				//alc all go!
@@ -1079,7 +1077,6 @@ al_buffer(buf){
 }
 
 gxtkSample::~gxtkSample(){
-	puts( "Discarding sample" );
 	Discard();
 }
 

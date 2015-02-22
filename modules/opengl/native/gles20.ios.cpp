@@ -10,6 +10,8 @@ BBDataBuffer *LoadImageData( BBDataBuffer *buf,String path,Array<int> info ){
 
 	int y=0,pitch=width*format;
 		
+	unsgined char *srcp=src;
+	
 	switch( format ){
 	case 3:
 		for( y=0;y<height;++y ){
@@ -31,7 +33,7 @@ BBDataBuffer *LoadImageData( BBDataBuffer *buf,String path,Array<int> info ){
 		break;
 	}
 	
-	free( src );
+	free( srcp );
 	
 	if( info.Length()>0 ) info[0]=width;
 	if( info.Length()>1 ) info[1]=height;
@@ -44,7 +46,7 @@ void _glBindAttribLocation( int program, int index, String name ){
 }
 
 void _glBufferData( int target,int size,BBDataBuffer *data,int usage ){
-	glBufferData( target,size,data->ReadPointer(),usage );
+	glBufferData( target,size,data ? data->ReadPointer() : 0,usage );
 }
 
 void _glBufferSubData( int target,int offset,int size,BBDataBuffer *data ){

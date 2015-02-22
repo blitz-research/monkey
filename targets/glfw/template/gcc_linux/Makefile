@@ -6,13 +6,16 @@ CXX=g++
 CXXFLAGS=
 
 CPPFLAGS=$(CCOPTS) \
- -I../glfw/include \
- -I../glfw/lib \
- -I../glfw/lib/x11 \
- -I../openal/include -I../stb \
- -D_GLFW_HAS_GLXGETPROCADDRESS \
- -D_GLFW_USE_LINUX_JOYSTICKS \
- -pthread
+-Wno-deprecated-declarations \
+-Wno-free-nonheap-object \
+-Wno-unused-result \
+-I../glfw/include \
+-I../glfw/lib \
+-I../glfw/lib/x11 \
+-I../openal/include -I../stb \
+-D_GLFW_HAS_GLXGETPROCADDRESS \
+-D_GLFW_USE_LINUX_JOYSTICKS \
+-pthread
 
 LD=g++
 LDFLAGS=

@@ -14,6 +14,7 @@ Class CppTranslator Extends CTranslator
 	Field lastDbgInfo:=""
 	Field dbgLocals:=New Stack<LocalDecl>
 	Field gc_mode=0
+	Field pure
 
 	Method TransType$( ty:Type )
 		If VoidType( ty ) Return "void"
@@ -50,19 +51,15 @@ Class CppTranslator Extends CTranslator
 		Local t$
 		For Local arg:=Eachin args
 			If t t+=","
-			Local targ:=arg.Trans()
-			If IsGcObject( arg ) And (IsHeapVal( arg ) Or IsInvoke( arg )) targ=Retain( targ )
+			
+			Local targ:=GcRetain( arg )
+
 			t+=targ
 		Next
 		Return Bra(t)
 	End
 	
 	'***** Utility *****
-	
-	Method Retain$( str:String )
-		If unsafe Or gc_mode<>2 Return str
-		Return "gc_retain("+str+")"
-	End
 	
 	Method Uncast:Expr( expr:Expr )
 		Repeat
@@ -80,32 +77,43 @@ Class CppTranslator Extends CTranslator
 		Return True
 	End
 	
-	Method IsInvoke?( expr:Expr )
-		expr=Uncast( expr )
-		Return InvokeExpr( expr ) Or InvokeMemberExpr( expr ) Or InvokeSuperExpr( expr )
-	End
-	
 	Method IsLocalVar?( expr:Expr )
 		expr=Uncast( expr )
 		Local vexpr:=VarExpr( expr )
 		Return vexpr And LocalDecl( vexpr.decl )
 	End
-	
-	Method IsHeapVal?( expr:Expr )
-		expr=Uncast( expr )
-		If IndexExpr( expr ) Return True
-		Local decl:Decl
-		If VarExpr( expr ) 
-			decl=VarExpr( expr ).decl
-		Else If MemberVarExpr( expr )
-			decl=MemberVarExpr( expr ).decl
-		End
-		Return FieldDecl( decl ) Or GlobalDecl( decl )
+
+	'extends Null objects and arrays of are not debuggable!
+	Method IsDebuggable?( type:Type )
+		Return True
+		#rem
+		Local objty:=ObjectType( type )
+		If Not objty
+			Local arrty:=ArrayType( type )
+			While arrty
+				Local elemty:=arrty.elemType
+				objty=ObjectType( elemty )
+				arrty=ArrayType( elemty )
+			Wend
+		Endif
+		If objty And Not objty.GetClass().ExtendsObject() Return False
+		Return True
+		#end
 	End
+	
+	Method GcRetain:String( expr:Expr,texpr:String="" )
+		If Not texpr texpr=expr.Trans()
+		If unsafe Or gc_mode<>2 Or Not IsGcObject( expr ) Return texpr
+
+		expr=Uncast( expr )
+		If NewObjectExpr( expr ) Or NewArrayExpr( expr ) Or ArrayExpr( expr ) Return texpr
+		If VarExpr( expr ) And LocalDecl( VarExpr( expr ).decl ) Return texpr
 		
+		Return "gc_retain("+texpr+")"
+	End
+	
 	Method TransLocalDecl$( munged$,init:Expr )
-		Local tinit:=init.Trans()
-		If IsGcObject( init ) And (IsHeapVal( init ) Or IsInvoke( init )) tinit=Retain(tinit)
+		Local tinit:=GcRetain( init )
 		Return TransType( init.exprType )+" "+munged+"="+tinit
 	End
 	
@@ -147,7 +155,9 @@ Class CppTranslator Extends CTranslator
 		If info=lastDbgInfo Return
 		lastDbgInfo=info
 		For Local decl:=Eachin dbgLocals
-			If decl.ident Emit "DBG_LOCAL("+decl.munged+",~q"+decl.ident+"~q)"
+			If decl.ident And IsDebuggable( decl.type )
+				Emit "DBG_LOCAL("+decl.munged+",~q"+decl.ident+"~q)"
+			Endif
 		Next
 		dbgLocals.Clear
 		Emit "DBG_INFO(~q"+info.Replace( "\","/" )+"~q);"
@@ -187,6 +197,8 @@ Class CppTranslator Extends CTranslator
 	End
 		
 	Method TransFunc$( decl:FuncDecl,args:Expr[],lhs:Expr )
+		pure=0
+		
 		CheckSafe decl
 		If decl.IsMethod()
 			If lhs Return TransSubExpr( lhs )+"->"+decl.munged+TransArgs( args,decl )
@@ -196,6 +208,8 @@ Class CppTranslator Extends CTranslator
 	End
 	
 	Method TransSuperFunc$( decl:FuncDecl,args:Expr[] )
+		pure=0
+	
 		CheckSafe decl
 		Return decl.ClassScope().munged+"::"+decl.munged+TransArgs( args,decl )
 	End
@@ -207,14 +221,16 @@ Class CppTranslator Extends CTranslator
 	End
 	
 	Method TransNewObjectExpr$( expr:NewObjectExpr )
-	
+		pure=0
+
 		Local t$="(new "+expr.classDecl.munged+")"
 		If expr.ctor t+="->"+expr.ctor.munged+TransArgs( expr.args,expr.ctor )
 		Return t
 	End
 	
 	Method TransNewArrayExpr$( expr:NewArrayExpr )
-	
+		pure=0
+
 		Local texpr$=expr.expr.Trans()
 		Return "Array<"+TransRefType( expr.ty )+" >"+Bra( expr.expr.Trans() )
 	End
@@ -307,6 +323,7 @@ Class CppTranslator Extends CTranslator
 	End
 	
 	Method TransArrayExpr$( expr:ArrayExpr )
+		pure=0
 	
 		Local elemType:=ArrayType( expr.exprType ).elemType
 
@@ -326,6 +343,8 @@ Class CppTranslator Extends CTranslator
 	End
 
 	Method TransIntrinsicExpr$( decl:Decl,expr:Expr,args:Expr[] )
+		pure=0	'relax!
+		
 		Local texpr$,arg0$,arg1$,arg2$
 		
 		If expr texpr=TransSubExpr( expr )
@@ -391,10 +410,12 @@ Class CppTranslator Extends CTranslator
 	'***** Statements *****
 	
 	Method BeginLoop()
-		If gc_mode=2 Emit "GC_ENTER"
+		If gc_mode<>2 Return
+		Emit "GC_ENTER"
 	End
 	
 	Method EndLoop()
+		If gc_mode<>2 Return
 	End
 	
 	Method TransTryStmt$( stmt:TryStmt )
@@ -432,14 +453,7 @@ Class CppTranslator Extends CTranslator
 		Local tlhs:=stmt.lhs.TransVar()
 		Local trhs:=stmt.rhs.Trans()
 		
-		If IsLocalVar( stmt.lhs )
-			If IsHeapVal( stmt.rhs ) Or IsInvoke( stmt.rhs ) trhs=Retain( trhs )
-			Return tlhs+"="+trhs
-		Endif
-		
-		If gc_mode=2 And IsLocalVar( stmt.rhs )
-			Return tlhs+"="+trhs
-		End
+		If IsLocalVar( stmt.lhs ) Return tlhs+"="+GcRetain( stmt.rhs,trhs )
 		
 		Return "gc_assign("+tlhs+","+trhs+")"
 	End
@@ -596,7 +610,6 @@ Class CppTranslator Extends CTranslator
 		If gc_mode=0 Return
 		
 		If Not ObjectType( ty ) And Not ArrayType( ty ) Return
-
 		If ObjectType( ty ) And Not ty.GetClass().ExtendsObject() Return
 	
 		If queue
@@ -669,10 +682,12 @@ Class CppTranslator Extends CTranslator
 				Local vdecl:=VarDecl( decl )
 				If Not vdecl Continue
 				
-				If ObjectType( vdecl.type )
-					Local cdecl:=vdecl.type.GetClass()
-					If cdecl And Not cdecl.ExtendsObject() Continue
-				Endif
+				If Not IsDebuggable( vdecl.type ) Continue
+				
+'				If ObjectType( vdecl.type )
+'					Local cdecl:=vdecl.type.GetClass()
+'					If cdecl And Not cdecl.ExtendsObject() Continue
+'				Endif
 				
 				If FieldDecl( decl )
 					Emit "t+=dbg_decl(~q"+decl.ident+"~q,&"+decl.munged+");"
@@ -733,6 +748,17 @@ Class CppTranslator Extends CTranslator
 			Endif
 		Next
 		
+		'extern null types
+		For Local decl:=Eachin app.allSemantedDecls
+			Local cdecl:=ClassDecl( decl )
+			If Not cdecl Or cdecl.ExtendsObject() Or cdecl.munged="String" Or cdecl.munged="Array" Continue
+			Emit "void gc_mark( "+cdecl.munged+" *p ){}"
+			If ENV_CONFIG="debug"
+				Emit "String dbg_type( "+cdecl.munged+" **p ){ return ~q"+decl.ident+"~q; }"
+				Emit "String dbg_value( "+cdecl.munged+" **p ){ return dbg_ptr_value( *p ); }"
+			Endif
+		Next
+		
 		'definitions!
 		For Local decl:=Eachin app.Semanted
 			
@@ -761,7 +787,7 @@ Class CppTranslator Extends CTranslator
 		For Local decl:=Eachin app.semantedGlobals
 			Local munged:=TransGlobal( decl )
 			Emit munged+"="+decl.init.Trans()+";"
-			If ENV_CONFIG="debug"
+			If ENV_CONFIG="debug" And IsDebuggable( decl.type )
 				Emit "DBG_GLOBAL(~q"+decl.ident+"~q,&"+munged+");"
 			Endif
 		Next

@@ -3,12 +3,20 @@
 Import "native/gametarget.${LANG}"
 #Endif
 
+Const BBWINDOW_FULLSCREEN:=1
+Const BBWINDOW_RESIZABLE:=2
+Const BBWINDOW_DECORATED:=4
+Const BBWINDOW_FLOATING:=8
+Const BBWINDOW_DEPTHBUFFER:=16
+Const BBWINDOW_SINGLEBUFFER:=32
+Const BBWINDOW_SECONDMONITOR:=64
+
 Extern
 
 Class BBDisplayMode
 	Field width:Int
 	Field height:Int
-	Field format:Int
+	Field depth:Int
 	Field hertz:Int
 	Field flags:Int
 End

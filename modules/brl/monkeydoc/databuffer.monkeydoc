@@ -78,6 +78,8 @@ The @encoding parameter should be one of:
 | "utf8"	| Unicode
 | "ascii"	| 8 bit ascii
 
+The returned value is the number of bytes poked into the databuffer.
+
 
 # Method PokeBytes:Void(address:Int,bytes:Int[],offset:Int,count:Int )
 
@@ -100,7 +102,7 @@ Copies @count 32 bit ints from the @ints array to the databuffer.
 @offset is the starting index within the source array, and @address is the starting byte address within the databuffer.
 
 
-# Method PokeFloats:Void(address:Int,floats:Int[],offset:Int,count:Int )
+# Method PokeFloats:Void(address:Int,floats:Float[],offset:Int,count:Int )
 
 Copies @count 32 bit floats from the @floats array to the databuffer.
 

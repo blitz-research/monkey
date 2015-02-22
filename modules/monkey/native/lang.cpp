@@ -31,7 +31,11 @@ void dbg_error( const char *p );
 
 //***** GC Config *****
 
+#if CFG_CPP_GC_DEBUG
+#define DEBUG_GC 1
+#else
 #define DEBUG_GC 0
+#endif
 
 // GC mode:
 //
@@ -144,9 +148,6 @@ int gc_markbit=1;
 
 gc_object *gc_cache[8];
 
-int gc_ctor_nest;
-gc_object *gc_locals[CFG_CPP_GC_MAX_LOCALS],**gc_locals_sp=gc_locals;
-
 void gc_collect_all();
 void gc_mark_queued( int n );
 
@@ -177,6 +178,9 @@ void gc_init2(){
 
 #if CFG_CPP_GC_MODE==2
 
+int gc_ctor_nest;
+gc_object *gc_locals[CFG_CPP_GC_MAX_LOCALS],**gc_locals_sp=gc_locals;
+
 struct gc_ctor{
 	gc_ctor(){ ++gc_ctor_nest; }
 	~gc_ctor(){ --gc_ctor_nest; }
@@ -187,14 +191,14 @@ struct gc_enter{
 	gc_enter():sp(gc_locals_sp){
 	}
 	~gc_enter(){
-	/*
+#if DEBUG_GC
 		static int max_locals;
 		int n=gc_locals_sp-gc_locals;
 		if( n>max_locals ){
 			max_locals=n;
 			printf( "max_locals=%i\n",n );
 		}
-	*/
+#endif		
 		gc_locals_sp=sp;
 	}
 };
@@ -214,31 +218,12 @@ struct gc_enter{
 
 #endif
 
-void gc_flush_free( int size ){
-
-	int t=gc_free_bytes-size;
-	if( t<0 ) t=0;
-	
-	while( gc_free_bytes>t ){
-		gc_object *p=gc_free_list.succ;
-		if( !p || p==&gc_free_list ){
-//			printf( "GC_ERROR:p=%p gc_free_bytes=%i\n",p,gc_free_bytes );
-//			fflush(stdout);
-			gc_free_bytes=0;
-			break;
-		}
-		GC_REMOVE_NODE(p);
-		delete p;	//...to gc_free
-	}
-}
-
-
 //Can be modified off thread!
 static volatile int gc_ext_new_bytes;
 
 #if _MSC_VER
-#define atomic_add(P,V) InterlockedExchangeAdd((volatile unsigned int*)P,V)//(*(P)+=(V))
-#define atomic_sub(P,V) InterlockedExchangeSubtract((volatile unsigned int*)P,V)//(*(P)-=(V))
+#define atomic_add(P,V) InterlockedExchangeAdd((volatile unsigned int*)P,V)			//(*(P)+=(V))
+#define atomic_sub(P,V) InterlockedExchangeSubtract((volatile unsigned int*)P,V)	//(*(P)-=(V))
 #else
 #define atomic_add(P,V) __sync_fetch_and_add(P,V)
 #define atomic_sub(P,V) __sync_fetch_and_sub(P,V)
@@ -248,6 +233,39 @@ static volatile int gc_ext_new_bytes;
 //
 void gc_ext_malloced( int size ){
 	atomic_add( &gc_ext_new_bytes,size );
+}
+
+void gc_object_free( gc_object *p ){
+
+	int size=p->flags & ~7;
+	gc_free_bytes-=size;
+	
+	if( size<64 ){
+		p->succ=gc_cache[size>>3];
+		gc_cache[size>>3]=p;
+	}else{
+		free( p );
+	}
+}
+
+void gc_flush_free( int size ){
+
+	int t=gc_free_bytes-size;
+	if( t<0 ) t=0;
+	
+	while( gc_free_bytes>t ){
+	
+		gc_object *p=gc_free_list.succ;
+
+		GC_REMOVE_NODE( p );
+
+#if DEBUG_GC
+//		printf( "deleting @%p\n",p );fflush( stdout );
+//		p->flags|=4;
+//		continue;
+#endif
+		delete p;
+	}
 }
 
 gc_object *gc_object_alloc( int size ){
@@ -301,22 +319,33 @@ gc_object *gc_object_alloc( int size ){
 	return p;
 }
 
-void gc_object_free( gc_object *p ){
+#if DEBUG_GC
 
-	int size=p->flags & ~7;
-	gc_free_bytes-=size;
-	
-	if( size<64 ){
-		p->succ=gc_cache[size>>3];
-		gc_cache[size>>3]=p;
-	}else{
-		free( p );
+template<class T> gc_object *to_gc_object( T *t ){
+	gc_object *p=dynamic_cast<gc_object*>(t);
+	if( p && (p->flags & 4) ){
+		printf( "gc error : object already deleted @%p\n",p );fflush( stdout );
+		exit(-1);
 	}
+	return p;
+}
+
+#else
+
+#define to_gc_object(t) dynamic_cast<gc_object*>(t)
+
+#endif
+
+template<class T> T *gc_retain( T *t ){
+#if CFG_CPP_GC_MODE==2
+	*gc_locals_sp++=to_gc_object( t );
+#endif
+	return t;
 }
 
 template<class T> void gc_mark( T *t ){
 
-	gc_object *p=dynamic_cast<gc_object*>(t);
+	gc_object *p=to_gc_object( t );
 	
 	if( p && (p->flags & 3)==gc_markbit ){
 		p->flags^=1;
@@ -329,7 +358,7 @@ template<class T> void gc_mark( T *t ){
 
 template<class T> void gc_mark_q( T *t ){
 
-	gc_object *p=dynamic_cast<gc_object*>(t);
+	gc_object *p=to_gc_object( t );
 	
 	if( p && (p->flags & 3)==gc_markbit ){
 		p->flags^=1;
@@ -338,15 +367,10 @@ template<class T> void gc_mark_q( T *t ){
 	}
 }
 
-template<class T> T *gc_retain( T *t ){
-#if CFG_CPP_GC_MODE==2
-	*gc_locals_sp++=dynamic_cast<gc_object*>( t );
-#endif	
-	return t;
-}
-
 template<class T,class V> void gc_assign( T *&lhs,V *rhs ){
-	gc_object *p=dynamic_cast<gc_object*>(rhs);
+
+	gc_object *p=to_gc_object( rhs );
+	
 	if( p && (p->flags & 3)==gc_markbit ){
 		p->flags^=1;
 		GC_REMOVE_NODE( p );
@@ -356,6 +380,8 @@ template<class T,class V> void gc_assign( T *&lhs,V *rhs ){
 }
 
 void gc_mark_locals(){
+
+#if CFG_CPP_GC_MODE==2
 	for( gc_object **pp=gc_locals;pp!=gc_locals_sp;++pp ){
 		gc_object *p=*pp;
 		if( p && (p->flags & 3)==gc_markbit ){
@@ -366,6 +392,7 @@ void gc_mark_locals(){
 			p->mark();
 		}
 	}
+#endif	
 }
 
 void gc_mark_queued( int n ){
@@ -378,8 +405,23 @@ void gc_mark_queued( int n ){
 	}
 }
 
+void gc_validate_list( gc_object &list,const char *msg ){
+	gc_object *node=list.succ;
+	while( node ){
+		if( node==&list ) return;
+		if( !node->pred ) break;
+		if( node->pred->succ!=node ) break;
+		node=node->succ;
+	}
+	if( msg ){
+		puts( msg );fflush( stdout );
+	}
+	puts( "LIST ERROR!" );
+	exit(-1);
+}
+
 //returns reclaimed bytes
-int gc_sweep(){
+void gc_sweep(){
 
 	int reclaimed_bytes=gc_alloced_bytes-gc_marked_bytes;
 	
@@ -390,6 +432,7 @@ int gc_sweep(){
 		gc_object *tail=gc_unmarked_list.pred;
 		gc_object *succ=&gc_free_list;
 		gc_object *pred=succ->pred;
+		
 		head->pred=pred;
 		tail->succ=succ;
 		pred->succ=head;
@@ -397,43 +440,46 @@ int gc_sweep(){
 		
 		gc_free_bytes+=reclaimed_bytes;
 	}
-	
+
 	//move marked to unmarked.
-	gc_unmarked_list=gc_marked_list;
-	gc_unmarked_list.succ->pred=gc_unmarked_list.pred->succ=&gc_unmarked_list;
-	
-	//clear marked.
-	GC_CLEAR_LIST( gc_marked_list );
+	if( GC_LIST_IS_EMPTY( gc_marked_list ) ){
+		GC_CLEAR_LIST( gc_unmarked_list );
+	}else{
+		gc_unmarked_list.succ=gc_marked_list.succ;
+		gc_unmarked_list.pred=gc_marked_list.pred;
+		gc_unmarked_list.succ->pred=gc_unmarked_list.pred->succ=&gc_unmarked_list;
+		GC_CLEAR_LIST( gc_marked_list );
+	}
 	
 	//adjust sizes
 	gc_alloced_bytes=gc_marked_bytes;
 	gc_marked_bytes=0;
 	gc_markbit^=1;
-	
-	return reclaimed_bytes;
 }
 
 void gc_collect_all(){
 
-//	printf( "Mark locals\n" );fflush( stdout );
+//	puts( "Mark locals" );
 	gc_mark_locals();
 
-//	printf( "Mark queued\n" );fflush( stdout );
+//	puts( "Marked queued" );
 	gc_mark_queued( 0x7fffffff );
 
-//	printf( "sweep\n" );fflush( stdout );	
+//	puts( "Sweep" );
 	gc_sweep();
 
-//	printf( "Mark roots\n" );fflush( stdout );
+//	puts( "Mark roots" );
 	gc_mark_roots();
+
+#if DEBUG_GC
+	gc_validate_list( gc_marked_list,"Validating gc_marked_list"  );
+	gc_validate_list( gc_unmarked_list,"Validating gc_unmarked_list"  );
+	gc_validate_list( gc_free_list,"Validating gc_free_list" );
+#endif
+
 }
 
 void gc_collect(){
-
-	if( gc_locals_sp!=gc_locals ){
-//		printf( "GC_LOCALS error\n" );fflush( stdout );
-		gc_locals_sp=gc_locals;
-	}
 	
 #if CFG_CPP_GC_MODE==1
 
@@ -451,12 +497,11 @@ void gc_collect(){
 
 #if DEBUG_GC
 	ms=gc_micros()-ms;
-	if( ms>=100 ) {printf( "gc time:%i\n",ms );fflush( stdout );}
-//	if( ms>=0 ) {printf( "gc time:%i\n",ms );fflush( stdout );}
+//	if( ms>=100 ) {printf( "gc time:%i\n",ms );fflush( stdout );}
+	if( ms>10 ) {printf( "gc time:%i\n",ms );fflush( stdout );}
 #endif
 
 #endif
-
 }
 
 // ***** Array *****
@@ -1049,14 +1094,19 @@ public:
 		return ref new Platform::String( rep->data,rep->length );
 	}
 #endif
+	CString<char> ToUtf8()const{
+		std::vector<unsigned char> buf;
+		Save( buf );
+		return CString<char>( &buf[0],buf.size() );
+	}
 
-	bool Save( FILE *fp ){
+	bool Save( FILE *fp )const{
 		std::vector<unsigned char> buf;
 		Save( buf );
 		return buf.size() ? fwrite( &buf[0],1,buf.size(),fp )==buf.size() : true;
 	}
 	
-	void Save( std::vector<unsigned char> &buf ){
+	void Save( std::vector<unsigned char> &buf )const{
 	
 		Char *p=rep->data;
 		Char *e=p+rep->length;
@@ -1286,7 +1336,7 @@ String dbg_type( String *p ){
 	return "String";
 }
 
-template<class T> String dbg_type( T *p ){
+template<class T> String dbg_type( T **p ){
 	return "Object";
 }
 
@@ -1316,7 +1366,7 @@ String dbg_value( String *p ){
 	return String("\"")+t+"\"";
 }
 
-template<class T> String dbg_value( T *t ){
+template<class T> String dbg_value( T **t ){
 	Object *p=dynamic_cast<Object*>( *t );
 	char buf[64];
 	sprintf_s( buf,"%p",p );
@@ -1326,11 +1376,18 @@ template<class T> String dbg_value( T *t ){
 template<class T> String dbg_value( Array<T> *p ){
 	String t="[";
 	int n=(*p).Length();
+	if( n>100 ) n=100;
 	for( int i=0;i<n;++i ){
 		if( i ) t+=",";
 		t+=dbg_value( &(*p)[i] );
 	}
 	return t+"]";
+}
+
+String dbg_ptr_value( void *p ){
+	char buf[64];
+	sprintf_s( buf,"%p",p );
+	return (buf[0]=='0' && buf[1]=='x' ? buf+2 : buf );
 }
 
 template<class T> String dbg_decl( const char *id,T *ptr ){

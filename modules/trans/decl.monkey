@@ -202,6 +202,7 @@ Class ValDecl Extends Decl
 		Else
 			InternalErr
 		Endif
+		If VoidType( type ) Err "Declaration has void type."
 	End
 	
 End
@@ -449,11 +450,6 @@ Public
 			If decl Return decl
 			tscope=tscope.scope
 		Wend
-#rem
-		Local decl:=GetDecl( ident )
-		If decl Return decl
-		If scope Return scope.FindDecl( ident )
-#end
 	End
 	
 	Method FindValDecl:ValDecl( ident$ )
@@ -522,7 +518,7 @@ Public
 		Local match:FuncDecl,isexact,err$
 
 		For Local func:FuncDecl=Eachin funcs
-			If Not func.CheckAccess() Continue
+'			If Not func.CheckAccess() Continue
 			
 			Local argDecls:ArgDecl[]=func.argDecls
 			
@@ -546,7 +542,6 @@ Public
 
 				Else If argDecls[i].init
 				
-'					exact=False
 					If Not explicit Continue
 					
 				Endif
@@ -1234,7 +1229,7 @@ Class ModuleDecl Extends ScopeDecl
 		Return "Module "+modpath
 	End
 	
-	Method New( ident$,attrs,munged$,modpath$,filepath$ )
+	Method New( ident$,attrs,munged$,modpath$,filepath$,app:AppDecl )
 	
 		Self.ident=ident
 		Self.attrs=attrs
@@ -1247,6 +1242,9 @@ Class ModuleDecl Extends ScopeDecl
 			Local bits:=modpath.Split( "." ),n:=bits.Length
 			If n>1 And bits[n-2]=bits[n-1] Self.rmodpath=StripExt( modpath )
 		Endif
+		
+		imported.Set filepath,Self
+		app.InsertModule Self
 		
 '		Print "Created module: ident="+Self.ident+", modpath="+Self.rmodpath+", filepath="+Self.filepath
 	End
@@ -1268,7 +1266,26 @@ Class ModuleDecl Extends ScopeDecl
 		While Not todo.IsEmpty()
 	
 			Local mdecl:ModuleDecl=todo.RemoveLast()
+			
 			Local tdecl:=mdecl.GetDecl2( ident )
+			
+			If tdecl And _env
+				'ignore private decls
+				Local ddecl:=Decl( tdecl )
+				If ddecl And Not ddecl.CheckAccess() tdecl=Null
+				
+				'ignore funclists with no public funcs
+				Local flist:=FuncDeclList( tdecl )
+				If flist
+					Local pub:=False
+					For Local fdecl:=Eachin flist
+						If Not fdecl.CheckAccess() Continue
+						pub=True
+						Exit
+					Next
+					If Not pub tdecl=Null
+				Endif
+			Endif
 			
 			If tdecl And tdecl<>decl
 				If mdecl=Self Return tdecl
@@ -1298,6 +1315,61 @@ Class ModuleDecl Extends ScopeDecl
 	
 	Method GetDecl2:Object( ident$ )
 		Return Super.GetDecl( ident )
+	End
+
+	Method ImportModule( modpath$,attrs )
+	
+		Local cdir:=ExtractDir( Self.filepath )
+		
+		Local dir:="",filepath:="",mpath:=modpath.Replace( ".","/" )+"."+FILE_EXT			'blah/etc.monkey
+		
+		For dir=Eachin ENV_MODPATH.Split( ";" )
+			If Not dir Continue
+			
+			'blah.monkey path
+			If dir="."
+				filepath=cdir+"/"+mpath
+			Else
+				filepath=RealPath( dir )+"/"+mpath
+			Endif
+			
+			'blah/blah.monkey path			
+			Local filepath2:=StripExt( filepath )+"/"+StripDir( filepath )
+			
+			If FileType( filepath )=FILETYPE_FILE
+				If FileType( filepath2 )<>FILETYPE_FILE Exit
+				Err "Duplicate module file: '"+filepath+"' and '"+filepath2+"'."
+			Endif
+			
+			filepath=filepath2
+			If FileType( filepath )=FILETYPE_FILE
+				If modpath.Contains( "." ) 	modpath+="."+ExtractExt( modpath ) Else modpath+="."+modpath
+				Exit
+			Endif
+			
+			filepath=""
+		Next
+		
+		If dir="." And Self.modpath.Contains( "." )
+			modpath=StripExt( Self.modpath )+"."+modpath
+		Endif
+		
+		Local app:=AppDecl( scope )
+	
+		Local mdecl:=app.imported.Get( filepath )
+		If mdecl And mdecl.modpath<>modpath
+			Print "Modpath error - import="+modpath+", existing="+mdecl.modpath
+		Endif
+		
+		If Self.imported.Contains( filepath ) Return
+		
+		If Not mdecl mdecl=ParseModule( modpath,filepath,app )
+		
+		Self.imported.Insert mdecl.filepath,mdecl
+		
+		If Not (attrs & DECL_PRIVATE) Self.pubImported.Insert mdecl.filepath,mdecl
+		
+		Self.InsertDecl New AliasDecl( mdecl.ident,attrs,mdecl )
 	End
 
 	Method OnSemant()

@@ -29,6 +29,8 @@ public:
 	virtual BBDisplayMode *GetDesktopMode();
 	virtual void SetSwapInterval( int interval );
 
+	virtual int SaveState( String state );
+	virtual String LoadState();
 	virtual String PathToFilePath( String path );
 	virtual unsigned char *LoadImageData( String path,int *width,int *height,int *depth );
 	virtual unsigned char *LoadAudioData( String path,int *length,int *channels,int *format,int *hertz );
@@ -45,8 +47,11 @@ private:
 	double _updatePeriod;
 	double _nextUpdate;
 	
-	int _swapInterval;
+	String _baseDir;
+	String _internalDir;
 	
+	int _swapInterval;
+
 	void UpdateEvents();
 		
 protected:
@@ -61,9 +66,6 @@ protected:
 };
 
 //***** glfwgame.cpp *****
-
-#define _QUOTE(X) #X
-#define _STRINGIZE( X ) _QUOTE(X)
 
 enum{
 	VKEY_BACKSPACE=8,VKEY_TAB,
@@ -100,6 +102,24 @@ enum{
 	VKEY_COMMA=188,VKEY_PERIOD=190,VKEY_SLASH=191
 };
 
+enum{
+	JOY_A=0x00,
+	JOY_B=0x01,
+	JOY_X=0x02,
+	JOY_Y=0x03,
+	JOY_LB=0x04,
+	JOY_RB=0x05,
+	JOY_BACK=0x06,
+	JOY_START=0x07,
+	JOY_LEFT=0x08,
+	JOY_UP=0x09,
+	JOY_RIGHT=0x0a,
+	JOY_DOWN=0x0b,
+	JOY_LSB=0x0c,
+	JOY_RSB=0x0d,
+	JOY_MENU=0x0e
+};
+
 BBGlfwGame *BBGlfwGame::_glfwGame;
 
 BBGlfwGame::BBGlfwGame():_updatePeriod(0),_nextUpdate(0),_swapInterval( CFG_GLFW_SWAP_INTERVAL ){
@@ -124,39 +144,117 @@ int BBGlfwGame::Millisecs(){
 
 bool BBGlfwGame::PollJoystick( int port,Array<Float> joyx,Array<Float> joyy,Array<Float> joyz,Array<bool> buttons ){
 
-	int joy=GLFW_JOYSTICK_1+port;
-	if( !glfwGetJoystickParam( joy,GLFW_PRESENT ) ) return false;
+	//Just in case...my PC has either started doing weird things with joystick ordering, or I assumed too much in the past!
+	static int pjoys[4];
+	if( !port ){
+		int i=0;
+		for( int joy=GLFW_JOYSTICK_1;joy<=GLFW_JOYSTICK_16 && i<4;++joy ){
+			if( glfwGetJoystickParam( joy,GLFW_PRESENT ) ) pjoys[i++]=joy;
+		}
+		while( i<4 ) pjoys[i++]=-1;
+	}
+	int joy=pjoys[port];
+	if( joy==-1 ) return false;
+	
+	//Stopped working on my PC at some point...
+//	int joy=GLFW_JOYSTICK_1+port;
+//	if( !glfwGetJoystickParam( joy,GLFW_PRESENT ) ) return false;
 
 	//read axes
 	float axes[6];
 	memset( axes,0,sizeof(axes) );
 	int n_axes=glfwGetJoystickPos( joy,axes,6 );
-	joyx[0]=axes[0];joyy[0]=axes[1];joyz[0]=axes[2];
-	joyx[1]=axes[3];joyy[1]=axes[4];joyz[1]=axes[5];
 	
 	//read buttons
 	unsigned char buts[32];
 	memset( buts,0,sizeof(buts) );
 	int n_buts=glfwGetJoystickButtons( joy,buts,32 );
-	if( n_buts>12 ){
-		for( int i=0;i<8;++i ) buttons[i]=(buts[i]==GLFW_PRESS);
-		for( int i=0;i<4;++i ) buttons[i+8]=(buts[n_buts-4+i]==GLFW_PRESS);
-		for( int i=0;i<n_buts-12;++i ) buttons[i+12]=(buts[i+8]==GLFW_PRESS);
-	}else{
-		for( int i=0;i<n_buts;++i ) buttons[i]=(buts[i]=-GLFW_PRESS);
-	}
+
+//	static int done;
+//	if( !done++ ) printf( "n_axes=%i, n_buts=%i\n",n_axes,n_buts );fflush( stdout );
+
+	//Ugh...
 	
-	//kludges for device type!
+	const int *dev_axes;
+	const int *dev_buttons;
+	
+#if _WIN32
+	
+	//xbox 360 controller
+	const int xbox360_axes[]={0,1,2,4,0x43,0x42,999};
+	const int xbox360_buttons[]={0,1,2,3,4,5,6,7,-4,-3,-2,-1,8,9,999};
+	
+	//logitech dual action
+	const int logitech_axes[]={0,1,0x86,2,0x43,0x87,999};
+	const int logitech_buttons[]={1,2,0,3,4,5,8,9,-4,-3,-2,-1,10,11,999};
+	
 	if( n_axes==5 && n_buts==14 ){
-		//XBOX_360?
-		joyx[1]=axes[4];
-		joyy[1]=-axes[3];
-	}else if( n_axes==4 && n_buts==18 ){
-		//My Saitek?
-		joyy[1]=-joyz[0];
+		dev_axes=xbox360_axes;
+		dev_buttons=xbox360_buttons;
+	}else{
+		dev_axes=logitech_axes;
+		dev_buttons=logitech_buttons;
 	}
 	
-	//enough!
+#else
+
+	//xbox 360 controller
+	const int xbox360_axes[]={0,1,0x14,2,3,0x25,999};
+	const int xbox360_buttons[]={11,12,13,14,8,9,5,4,2,0,3,1,6,7,10,999};
+
+	//ps3 controller
+	const int ps3_axes[]={0,1,0x88,2,3,0x89,999};
+	const int ps3_buttons[]={14,13,15,12,10,11,0,3,7,4,5,6,1,2,16,999};
+
+	//logitech dual action
+	const int logitech_axes[]={0,1,0x86,2,3,0x87,999};
+	const int logitech_buttons[]={1,2,0,3,4,5,8,9,15,12,13,14,10,11,999};
+
+	if( n_axes==6 && n_buts==15 ){
+		dev_axes=xbox360_axes;
+		dev_buttons=xbox360_buttons;
+	}else if( n_axes==4 && n_buts==19 ){
+		dev_axes=ps3_axes;
+		dev_buttons=ps3_buttons;
+	}else{
+		dev_axes=logitech_axes;
+		dev_buttons=logitech_buttons;
+	}
+
+#endif
+
+	const int *p=dev_axes;
+	
+	float joys[6]={0,0,0,0,0,0};
+	
+	for( int i=0;i<6 && p[i]!=999;++i ){
+		int j=p[i]&0xf,k=p[i]&~0xf;
+		if( k==0x10 ){
+			joys[i]=(axes[j]+1)/2;
+		}else if( k==0x20 ){
+			joys[i]=(1-axes[j])/2;
+		}else if( k==0x40 ){
+			joys[i]=-axes[j];
+		}else if( k==0x80 ){
+			joys[i]=(buts[j]==GLFW_PRESS);
+		}else{
+			joys[i]=axes[j];
+		}
+	}
+	
+	joyx[0]=joys[0];joyy[0]=joys[1];joyz[0]=joys[2];
+	joyx[1]=joys[3];joyy[1]=joys[4];joyz[1]=joys[5];
+	
+	p=dev_buttons;
+	
+	for( int i=0;i<32;++i ) buttons[i]=false;
+	
+	for( int i=0;i<32 && p[i]!=999;++i ){
+		int j=p[i];
+		if( j<0 ) j+=n_buts;
+		buttons[i]=(buts[j]==GLFW_PRESS);
+	}
+
 	return true;
 }
 
@@ -181,15 +279,108 @@ void BBGlfwGame::SetMouseVisible( bool visible ){
 	}
 }
 
+int BBGlfwGame::SaveState( String state ){
+#ifdef CFG_GLFW_APP_LABEL
+	if( FILE *f=OpenFile( "monkey://internal/.monkeystate","wb" ) ){
+		bool ok=state.Save( f );
+		fclose( f );
+		return ok ? 0 : -2;
+	}
+	return -1;
+#else
+	return BBGame::SaveState( state );
+#endif
+}
+
+String BBGlfwGame::LoadState(){
+#ifdef CFG_GLFW_APP_LABEL
+	if( FILE *f=OpenFile( "monkey://internal/.monkeystate","rb" ) ){
+		String str=String::Load( f );
+		fclose( f );
+		return str;
+	}
+	return "";
+#else
+	return BBGame::LoadState();
+#endif
+}
+
 String BBGlfwGame::PathToFilePath( String path ){
+
+	if( !_baseDir.Length() ){
+	
+		String appPath;
+
+#if _WIN32
+		WCHAR buf[MAX_PATH+1];
+		GetModuleFileNameW( GetModuleHandleW(0),buf,MAX_PATH );
+		buf[MAX_PATH]=0;appPath=String( buf ).Replace( "\\","/" );
+
+#elif __APPLE__
+
+		char buf[PATH_MAX+1];
+		uint32_t size=sizeof( buf );
+		_NSGetExecutablePath( buf,&size );
+		buf[PATH_MAX]=0;appPath=String( buf ).Replace( "/./","/" );
+	
+#elif __linux
+		char lnk[PATH_MAX+1],buf[PATH_MAX];
+		sprintf( lnk,"/proc/%i/exe",getpid() );
+		int n=readlink( lnk,buf,PATH_MAX );
+		if( n<0 || n>=PATH_MAX ) abort();
+		appPath=String( buf,n );
+
+#endif
+		int i=appPath.FindLast( "/" );if( i==-1 ) abort();
+		_baseDir=appPath.Slice( 0,i );
+		
+#if __APPLE__
+		if( _baseDir.EndsWith( ".app/Contents/MacOS" ) ) _baseDir=_baseDir.Slice( 0,-5 )+"Resources";
+#endif
+//		bbPrint( String( "_baseDir=" )+_baseDir );
+	}
+	
 	if( !path.StartsWith( "monkey:" ) ){
 		return path;
 	}else if( path.StartsWith( "monkey://data/" ) ){
-		return String("./data/")+path.Slice(14);
+		return _baseDir+"/data/"+path.Slice( 14 );
 	}else if( path.StartsWith( "monkey://internal/" ) ){
-		return String("./internal/")+path.Slice(18);
+		if( !_internalDir.Length() ){
+#ifdef CFG_GLFW_APP_LABEL
+
+#if _WIN32
+			_internalDir=String( getenv( "APPDATA" ) );
+#elif __APPLE__
+			_internalDir=String( getenv( "HOME" ) )+"/Library/Application Support";
+#elif __linux
+			_internalDir=String( getenv( "HOME" ) )+"/.config";
+			mkdir( _internalDir.ToCString<char>(),0777 );
+#endif
+
+#ifdef CFG_GLFW_APP_PUBLISHER
+			_internalDir=_internalDir+"/"+_STRINGIZE( CFG_GLFW_APP_PUBLISHER );
+#if _WIN32
+			_wmkdir( _internalDir.ToCString<wchar_t>() );
+#else
+			mkdir( _internalDir.ToCString<char>(),0777 );
+#endif
+#endif
+
+			_internalDir=_internalDir+"/"+_STRINGIZE( CFG_GLFW_APP_LABEL );
+#if _WIN32
+			_wmkdir( _internalDir.ToCString<wchar_t>() );
+#else
+			mkdir( _internalDir.ToCString<char>(),0777 );
+#endif
+
+#else
+			_internalDir=_baseDir+"/internal";
+#endif			
+//			bbPrint( String( "_internalDir=" )+_internalDir );
+		}
+		return _internalDir+"/"+path.Slice( 18 );
 	}else if( path.StartsWith( "monkey://external/" ) ){
-		return String("./external/")+path.Slice(18);
+		return _baseDir+"/external/"+path.Slice( 18 );
 	}
 	return "";
 }
@@ -479,6 +670,7 @@ void BBGlfwGame::SetSwapInterval( int interval ){
 }
 
 void BBGlfwGame::UpdateEvents(){
+
 	if( _suspended ){
 		glfwWaitEvents();
 	}else{
@@ -510,6 +702,7 @@ void BBGlfwGame::Run(){
 	while( glfwGetWindowParam( GLFW_OPENED ) ){
 	
 		RenderGame();
+
 		glfwSwapBuffers();
 		
 		if( _nextUpdate ){

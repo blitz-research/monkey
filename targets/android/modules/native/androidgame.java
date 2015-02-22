@@ -32,6 +32,8 @@ class ActivityDelegate{
 	}
 	public void onActivityResult( int requestCode,int resultCode,Intent data ){
 	}
+	public void onNewIntent( Intent intent ){
+	}
 }
 
 class BBAndroidGame extends BBGame implements GLSurfaceView.Renderer,SensorEventListener{
@@ -201,7 +203,9 @@ class BBAndroidGame extends BBGame implements GLSurfaceView.Renderer,SensorEvent
 		
 		//Voodoo to disable predictive text on soft keyboard
 		public InputConnection onCreateInputConnection( EditorInfo outAttrs ){
+			//voodoo to disable various undesirable soft keyboard features such as predictive text and fullscreen mode.
 			outAttrs.inputType=InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD|InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+			outAttrs.imeOptions=EditorInfo.IME_FLAG_NO_FULLSCREEN|EditorInfo.IME_FLAG_NO_EXTRACT_UI;			
 			return null;
 		}
 		
@@ -466,7 +470,7 @@ class BBAndroidGame extends BBGame implements GLSurfaceView.Renderer,SensorEvent
 			File f=Environment.getExternalStorageDirectory();
 			if( f!=null ) return f+"/"+path.substring(18);
 		}
-		return "";
+		return PathToAssetPath(path);
 	}
 
 	String PathToAssetPath( String path ){
@@ -780,5 +784,12 @@ class AndroidGame extends Activity{
 			delegate.onActivityResult( requestCode,resultCode,data );
 		}
 	}
+	
+	@Override
+	public void onNewIntent( Intent intent ){
+		super.onNewIntent( intent );
+		for( ActivityDelegate delegate : _game._activityDelegates ){
+			delegate.onNewIntent( intent );
+		}
+	}
 }
-

@@ -1022,6 +1022,7 @@ Class Parser
 				Endif
 				ParseStmt
 			Wend
+			If _tokeType=TOKE_IDENT And ParseIdent()<>varid Err "Next variable name does not match For variable name"
 			PopBlock
 			
 			Local stmt:ForEachinStmt=New ForEachinStmt( varid,varty,varlocal,expr,block )
@@ -1073,9 +1074,8 @@ Class Parser
 			Endif
 			ParseStmt
 		Wend
+		If _tokeType=TOKE_IDENT And ParseIdent()<>varid Err "Next variable name does not match For variable name"
 		PopBlock
-		
-		NextToke
 
 		Local stmt:ForStmt=New ForStmt( init,expr,incr,block )
 		
@@ -1507,10 +1507,10 @@ Class Parser
 			classDecl.munged=classDecl.ident
 			If CParse( "=" ) classDecl.munged=ParseStringLit()
 		Endif
-		
+
 		Local decl_attrs=(attrs & DECL_EXTERN)
 		
-		Local func_attrs=decl_attrs
+		Local func_attrs:=0
 		If attrs & CLASS_INTERFACE func_attrs|=DECL_ABSTRACT
 		
 		Repeat
@@ -1521,18 +1521,18 @@ Class Parser
 				Exit
 			Case "private"
 				NextToke
-				decl_attrs=decl_attrs | DECL_PRIVATE
+				decl_attrs|=DECL_PRIVATE
 			Case "public"
 				NextToke
-				decl_attrs=decl_attrs & ~DECL_PRIVATE
+				decl_attrs&=~DECL_PRIVATE
 			Case "const","global","field"
 				If (attrs & CLASS_INTERFACE) And _toke<>"const" Err "Interfaces can only contain constants and methods."
 				classDecl.InsertDecls ParseDecls( _toke,decl_attrs )
 			Case "method"
-				classDecl.InsertDecl ParseFuncDecl( func_attrs )
+				classDecl.InsertDecl ParseFuncDecl( decl_attrs|func_attrs )
 			Case "function"
 				If (attrs & CLASS_INTERFACE) Err "Interfaces can only contain constants and methods."
-				classDecl.InsertDecl ParseFuncDecl( func_attrs )
+				classDecl.InsertDecl ParseFuncDecl( decl_attrs|func_attrs )
 			Default
 				Err "Syntax error - expecting class member declaration."
 			End Select
@@ -1576,74 +1576,14 @@ Class Parser
 	End
 	
 	Method ImportModule( modpath$,attrs )
-	
-		Local cdir:=RealPath( ExtractDir( _toker.Path ) )
-		
-		Local dir:="",filepath:="",mpath:=modpath.Replace( ".","/" )+"."+FILE_EXT			'blah/etc.monkey
-		
-		For dir=Eachin ENV_MODPATH.Split( ";" )
-			If Not dir Continue
-			
-			'blah.monkey path
-			If dir="."
-				filepath=cdir+"/"+mpath
-			Else
-				filepath=RealPath( dir )+"/"+mpath
-			Endif
-			
-			'blah/blah.monkey path			
-			Local filepath2:=StripExt( filepath )+"/"+StripDir( filepath )
-			
-			If FileType( filepath )=FILETYPE_FILE
-				If FileType( filepath2 )<>FILETYPE_FILE Exit
-				Err "Duplicate module file: '"+filepath+"' and '"+filepath2+"'."
-			Endif
-			
-			filepath=filepath2
-			If FileType( filepath )=FILETYPE_FILE
-				If modpath.Contains( "." ) 	modpath+="."+ExtractExt( modpath ) Else modpath+="."+modpath
-				Exit
-			Endif
-			
-			filepath=""
-		Next
-		
-		If dir="." And _module.modpath.Contains( "." )
-			modpath=StripExt( _module.modpath )+"."+modpath
-		Endif
-	
-		Local mdecl:=_app.imported.Get( filepath )
-		If mdecl And mdecl.modpath<>modpath
-			Print "Modpath error - import="+modpath+", existing="+mdecl.modpath
-		Endif
-		
-		If _module.imported.Contains( filepath ) Return
-		
-		If Not mdecl mdecl=ParseModule( modpath,filepath,_app )
-		
-		_module.imported.Insert mdecl.filepath,mdecl
-		
-		If Not (attrs & DECL_PRIVATE) _module.pubImported.Insert mdecl.filepath,mdecl
-		
-		_module.InsertDecl New AliasDecl( mdecl.ident,attrs,mdecl )
-
+		'done by preprocessor now...	
 	End
 	
 	Method ParseMain()
 	
 		SkipEols
 		
-		If _module
-		
-			If CParse( "strict" ) _module.attrs|=MODULE_STRICT
-		
-			_module.imported.Set _module.filepath,_module
-			
-			_app.InsertModule _module
-			
-			ImportModule "monkey",0
-			
-		Endif
+		If _module And CParse( "strict" ) _module.attrs|=MODULE_STRICT
 			
 		Local attrs
 		
@@ -1690,7 +1630,7 @@ Class Parser
 
 					Local scope:ScopeDecl=_module
 					
-					_env=_module	'naughty! Shouldn't be doing GetDecl in parser...
+					PushEnv _module	'naughty! Shouldn't be doing GetDecl in parser...
 					
 					Repeat
 						Local id:=ParseIdent()
@@ -1700,8 +1640,8 @@ Class Parser
 						scope=ScopeDecl( decl )
 						If Not scope Or FuncDecl( scope ) Err "Invalid scope '"+id+"'."
 					Forever
-					
-					_env=Null	'/naughty
+
+					PopEnv			'/naughty
 					
 					_module.InsertDecl New AliasDecl( ident,attrs,decl )
 					
@@ -1781,9 +1721,11 @@ Function ParseModule:ModuleDecl( modpath$,filepath$,app:AppDecl )
 	Local ident:=modpath
 	If ident.Contains( "." ) ident=ExtractExt( ident )
 	
-	Local mdecl:=New ModuleDecl( ident,0,"",modpath,filepath )
+	Local mdecl:=New ModuleDecl( ident,0,"",modpath,filepath,app )
+	
+	mdecl.ImportModule "monkey",0
 
-	Local source:=PreProcess( filepath,mdecl.rmodpath )
+	Local source:=PreProcess( filepath,mdecl )
 	
 	Local toker:=New Toker( filepath,source )
 

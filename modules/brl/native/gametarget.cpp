@@ -70,7 +70,7 @@ public:
 	virtual BBDisplayMode *GetDesktopMode(){ return 0; }
 	virtual void SetSwapInterval( int interval ){}
 
-	// ***** Native *****	
+	// ***** Native *****
 	virtual String PathToFilePath( String path );
 	virtual FILE *OpenFile( String path,String mode );
 	virtual unsigned char *LoadData( String path,int *plength );

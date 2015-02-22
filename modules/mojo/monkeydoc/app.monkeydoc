@@ -192,6 +192,8 @@ End
 
 Returns the current date and time as an array of 7 integers: year, month (1-12), day (1-31), hours (0-23), minutes (0-59), seconds (0-59) and milliseconds (0-999).
 
+On the GLFW target, GetDate is only accurate to the second. Milliseconds are not available and index 6 of the GetDate array will always return 0.
+
 Example: 
 
 <pre>
@@ -326,10 +328,18 @@ Calling this function does NOT result in your application's [[OnResize]] method 
 
 @flags can be any combination of the following values (use the | operator to combine flags):
 
-| @flags	| @meaning
-| 1			| Fullscreen
+| @flags	| @meaning				| @targets
+| 1			| Fullscreen			| glfw3, xna
+| 2			| Resizable window		| glfw3
+| 4			| Decorated window		| glfw3
+| 8			| Floating window		| glfw3
+| 16		| Depth buffered		| glfw3
+| 32		| Single buffered		| glfw3
+| 64		| Use second monitor	| glfw3
 
 Use [[DisplayModes]] for a list of valid fullscreen device width/heights.
+
+Note that this function is not affected by any app config settings such as #GLFW_WINDOW_FULLSCREEN.
 
 
 # Function DisplayModes:DisplayMode[]()

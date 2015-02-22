@@ -1,5 +1,170 @@
 
-NOTE: If you're having trouble with a new version, try deleting '.build' dirs!!!!!
+***** v83a *****
+
+Added src/rebuildall.sh, linux only.
+
+Fixed ReadPixels setting display purple on XNA.
+
+Fixed some MonkeyStore issues - added 'interrupted:Product[]' param to OnOpenStoreComplete.
+
+Fixed gles20 glBufferData not accepting null databuffer.
+
+Added some PSM docs courtesy of Alan Rawkins.
+
+Added some more flags to SetDeviceWindow (GLFW only!).
+
+Fixed ios LoadImageData bug.
+
+Updated glfw3 to github version.
+
+Added GLFW_REPEAT to OnKey handler for glfw target for GetChar fix.
+
+
+***** v82b *****
+
+Fixed glfw3 windows/linux gcc builds dumping obj files in same dir.
+
+Fixed val decls can have void type.
+
+Upped max debugger array elements dumped from 10 to 100.
+
+Fixed issue with alias statements confusing/crashing new import handling.
+
+
+***** v82a *****
+
+Fixed some typos in brl.datastream.
+
+Imports now happen while preprocessing, not after.
+
+Fixed c++ issue with reflection and recent extends null fixes.
+
+Fixed html5 webaudio panning issue - panningModel now set to "equalpower".
+
+
+***** v81b *****
+
+Added #GLFW_WINDOW_DECORATED to glfw3 target - set to 'false' to create a borderless etc window.
+
+Fixed macos glfw3 audio not working.
+
+Ant now referenced by absolute path in android builder because Yosemite...
+
+Fixed glfw/glfw3 targets so they can build with mingw64 (TDM-GCC-64 tested). Building with mingw64 will produce 64 bit apps by default.
+
+Removed forced 32 bit architecture for macos stdcpp builds.
+
+Moved some hard coded gcc options from transcc to makefile for glfw target.
+
+Added AppPath/AppArgs/SetEnv/GetEnv/ChangeDir/CurrentDir/Execute/ExitApp to brl.process - brl.filepath, brl.filesystem and brl.process should now be preferred over os module (although that wont be going anywhere just yet).
+
+Added src/mserver/mserver.monkey, src/launcher/launcher.monkey and src/rebuildall.monkey for linux 64.
+
+Renamed src/monkey->src/launcher; removed src/modman.
+
+Added #GLFW_VERSION int var to glfw targets.
+
+Fixed glfw3 window resizing not updating DeviceWidth/DeviceHeight.
+
+Fixed weird yosemite issue where ant wasn't found when building for android.
+
+
+***** v81a *****
+
+Renamed a bunch of targets  - see IDE combo box. Shouldn't affect monkey code?
+
+Added new glfw3 target (note: had to apt-get install libxcursor-dev and libxinerama-dev on Linux)
+
+More extern extends null fixes for debugger/gc.
+
+Fixed bug where extern 'extends null' objects confused cpp debug builds.
+
+Tweaked android audio so pool.stop() isn't inadvertantly called twice.
+
+
+***** v80c *****
+
+Fixed a nasty GC bug.
+
+Fixed misspelling of CFG_GLFW_APP_LABEL in glfw target.
+
+Had another hack at the glfw joystick code. Both pc/mac versions now attempt to detect xbox360 controllers (mac also tries to detect ps3) defaulting to 'logitech dual action' layout if device not recognized. FAR from foolproof, but should/may be an improvement on current setup.
+
+Added RealPath to brl.filesystem.
+
+
+***** v80b *****
+
+Fixed android_new 'sdk not found' admob issue - moved some google-player-services_lib config files to 'templates' dir.
+
+Fixed trans Next [varname] issue where varname was being ignored.
+
+Transcc android builders now preserve parent dir name when copying android #LIBS files from "x86", "mips", "armeabi" and "armeabi-v7a" dirs.
+
+Fixed misspelling of MANIFEST as MAINFEST in transcc android builders!
+
+Merged some pull requests: Internal android ActivityDelegate class now handles onNewIntent, and android brl.filesystem CopyFile() now handles src files in monkey://data/
+
+
+***** v80a *****
+
+Changed glfw LoadState/SaveState to use monkey://internal/.monkeystate if #GLFW_APP_LABEL is set.
+
+Changed glfw monkey://internal/ to point to local per-user app data location. App must set #GLFW_APP_LABEL (and optionally #GLFW_APP_PUBLISHER) for this to work. App data location on windows is: $APPDATA\GLFW_APP_PUBLISHER\GLFW_APP_LABEL; on linux: $HOME/.config/GLFW_APP_PUBLISHER/GLFW_APP_LABEL; on macos, $HOME/Library/Application Support/GLFW_APP_PUBLISHER/GLFW_APP_LABEL. If #GLFW_APP_PUBLISHER is not set, it's not used.
+
+Made glfw target monkey://data/ etc dir locations absolute, not CD relative.
+
+Removed local.properties file from googleplay lib in android_new target template. Seems to use 'app' local.properties file instead OK.
+
+Fixed glfw joystick button code with <12 buttons.
+
+
+***** v79e *****
+
+Made Image Init methods public so async loader can use them!
+
+Had a go at fixing dead code analysis for weird Java 'If True' exception.
+
+
+***** v79d *****
+
+Added experimental android_new target - targets API 10 (2.3.3 Gingerbread), requires SDK 19 (4.2.2). Uses googleplay for admob.
+
+Fixed android fullscreen soft keyboard issue.
+
+Fixed private methods/functions not really private.
+
+Fixed private const/var/class decls in modules causing name clashes.
+
+Ted fix: Project browser 'new file' now prompts before overwriting existing files.
+
+#HTML5_WEBAUDIO_ENABLED now defaults to True - code will still fallback to old media player code if webaudio not preset, eg: on IE11.
+
+Mojo openal alcOpenDevice now tries default, hardware, software devices, in that order.
+
+Fixed some opengl/webgl texImage bugs.
+
+Doubled max width of 'help' combobox in Ted.
+
+
+***** v79c *****
+
+Removed 'Flush' calls from mojo native WritePixels2 functions - shouldn't be necessary and causes issues outside OnRender.
+
+Performance tweaks to GC_MODE 2.
+
+
+***** v79b *****
+
+Fixed some bugs in c++ GC_MODE 2.
+
+
+***** v79a *****
+
+Points/Lines offset by +.5 in screenspace for android, ios, winrt, glfw and xna targets. Html5/Flash seem to be OK as-is; PSM still on hold until I get my Vita back...
+
+Restored winrt_winphone8 EnableKeyboard to its former 'glory', only tested on my HTC 8S though. Tried hard to get winrt_win8 EnableKeyboard going but gave up. I am seriously considering deprecating this feature as it's a nasty hack on pretty much all targets.
+
 
 ***** v78h *****
 
