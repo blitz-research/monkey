@@ -8,7 +8,7 @@ public:
 	virtual void applicationDidEnterBackground(UIApplication *application) {};
 	virtual void applicationWillEnterForeground(UIApplication *application) {};
 	virtual void applicationWillTerminate(UIApplication *application) {};
-	virtual bool openURL(NSURL *url, NSString *sourceApplication) {};
+	virtual bool openURL(NSURL *url, NSString *sourceApplication) { return true; };
 };
 
 class BBIosGame : public BBGame{
