@@ -9,6 +9,7 @@ public:
 	virtual void applicationWillEnterForeground(UIApplication *application) {};
 	virtual void applicationWillTerminate(UIApplication *application) {};
 	virtual bool openURL(NSURL *url, NSString *sourceApplication) { return true; };
+    virtual void didReceiveLocalNotification(UILocalNotification *notification) {};
 };
 
 class BBIosGame : public BBGame{
@@ -718,6 +719,10 @@ void BBIosGame::ViewDisappeared(){
     return mask;
 }
 
+-(NSUInteger)application:(UIApplication*)application supportedInterfaceOrientationsForWindow:(UIWindow*)window {
+    return UIInterfaceOrientationMaskAllButUpsideDown;
+}
+
 @end
 
 //***** BBMonkeyAppDelegate implementation *****
@@ -728,6 +733,7 @@ void BBIosGame::ViewDisappeared(){
 @synthesize view;
 @synthesize viewController;
 @synthesize textField;
+@synthesize localNotification;
 
 -(void)applicationWillResignActive:(UIApplication*)application{
 
@@ -775,6 +781,13 @@ void BBIosGame::ViewDisappeared(){
 		returnValue |= appDelegate->openURL(url, sourceApplication);
 	}
 	return returnValue;
+}
+
+-(void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
+    for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+        IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
+        appDelegate->didReceiveLocalNotification(notification);
+    }
 }
 
 -(BOOL)textFieldShouldEndEditing:(UITextField*)textField{

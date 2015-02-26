@@ -39,6 +39,14 @@ public:
 	
     [_window makeKeyAndVisible];
     
+    Class cls = NSClassFromString(@"UILocalNotification");
+    if (cls) {
+        UILocalNotification *notification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
+        if (notification) {
+            self.localNotification = notification;
+        }
+    }
+    
 	return YES;
 }
 
