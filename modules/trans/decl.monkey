@@ -10,6 +10,7 @@ Const DECL_EXTERN=		$000100
 Const DECL_PRIVATE=		$000200
 Const DECL_ABSTRACT=	$000400
 Const DECL_FINAL=		$000800
+Const DECL_INTERNAL=	$004000
 
 Const CLASS_INTERFACE=	$001000
 Const CLASS_THROWABLE=	$002000
@@ -75,6 +76,10 @@ Class Decl
 		Return (attrs & DECL_ABSTRACT)<>0
 	End
 	
+	Method IsInternal()
+		Return (attrs & DECL_INTERNAL)<>0
+	End
+	
 	Method IsSemanted()
 		Return (attrs & DECL_SEMANTED)<>0
 	End
@@ -104,7 +109,7 @@ Class Decl
 	End
 	
 	Method CheckAccess()
-		If IsPrivate() And ModuleScope()<>_env.ModuleScope()
+		If IsPrivate() And ModuleScope()<>_env.ModuleScope() Or IsInternal() And ModuleScope().filedir<>_env.ModuleScope().filedir
 			Local fdecl:=_env.FuncScope()
 			If fdecl And fdecl.attrs & DECL_REFLECTOR Return True
 			Return False
@@ -114,7 +119,11 @@ Class Decl
 	
 	Method AssertAccess()
 		If Not CheckAccess()
-			Err ToString() +" is private."
+			If IsInternal()
+				Err ToString() +" is internal."
+			Else
+				Err ToString() +" is private."
+			End
 		Endif
 	End
 	
@@ -1221,7 +1230,7 @@ Const MODULE_SEMANTALL=2
 
 Class ModuleDecl Extends ScopeDecl
 
-	Field modpath$,rmodpath$,filepath$
+	Field modpath$,rmodpath$,filepath$,filedir$
 	Field imported:=New StringMap<ModuleDecl>		'Maps filepath to modules
 	Field pubImported:=New StringMap<ModuleDecl>	'Ditto for publicly imported modules
 	
@@ -1237,6 +1246,7 @@ Class ModuleDecl Extends ScopeDecl
 		Self.modpath=modpath
 		Self.rmodpath=modpath
 		Self.filepath=filepath
+		Self.filedir=ExtractDir(filepath)
 		
 		If modpath.Contains( "." )
 			Local bits:=modpath.Split( "." ),n:=bits.Length
