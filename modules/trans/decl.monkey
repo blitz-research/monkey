@@ -85,6 +85,14 @@ Class Decl
 		Return (attrs & DECL_PROTECTED)<>0
 	End
 	
+	Method IsProtectedInternal()
+		Return IsInternal() And IsProtected()
+	End
+	
+	Method IsPublic()
+		Return Not IsPrivate() And Not IsInternal() And Not IsProtected()
+	End
+	
 	Method IsSemanted()
 		Return (attrs & DECL_SEMANTED)<>0
 	End
@@ -116,42 +124,40 @@ Class Decl
 	Method CheckAccess()
 		' if no environment, just let us through
 		If Not _env Return True
-		Local accessible:=False
-		If ModuleScope()=_env.ModuleScope()
-			' if same module, always accessible
-			accessible=True
-		Elseif Not IsInternal() And Not IsProtected()
-			' if not internal and not protected, accessible if not private
-			' this caters for public
-			accessible=Not IsPrivate()
-		Else
+		
+		' if public, always accessible
+		If IsPublic() Return True
+		
+		' if same module, always accessible
+		If ModuleScope()=_env.ModuleScope() Return True
+		
+		' if not private, check internal/protected
+		If Not IsPrivate()
 			' if internal and same directory, accessible
-			If IsInternal() And ModuleScope().filedir=_env.ModuleScope().filedir accessible = True
+			If IsInternal() And ModuleScope().filedir=_env.ModuleScope().filedir Return True
+			
 			' if protected and subclassed, accessible
-			If Not accessible And IsProtected()
+			If IsProtected()
 				Local thisClass:=ClassScope()
 				Local currentClass:=_env.ClassScope()
-				While Not accessible And currentClass
-					If currentClass=thisClass
-						accessible=True
-					Else
-						currentClass=currentClass.superClass
-					End
+				While currentClass
+					If currentClass=thisClass Return True
+					currentClass=currentClass.superClass
 				End
 			End
 		End
-		' if inaccessible, throw an error
-		If Not accessible
-			Local fdecl:=_env.FuncScope()
-			If fdecl And fdecl.attrs & DECL_REFLECTOR Return True
-			Return False
-		Endif
-		Return True
+		
+		' inaccessible, throw an error
+		Local fdecl:=_env.FuncScope()
+		If fdecl And fdecl.attrs & DECL_REFLECTOR Return True
+		Return False
 	End
 	
 	Method AssertAccess()
 		If Not CheckAccess()
-			If IsProtected()
+			If IsProtectedInternal()
+				Err ToString() +" is protected and internal."
+			Elseif IsProtected()
 				Err ToString() +" is protected."
 			Elseif IsInternal()
 				Err ToString() +" is internal."

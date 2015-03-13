@@ -1533,12 +1533,17 @@ Class Parser
 				NextToke
 				decl_attrs|=DECL_INTERNAL
 				decl_attrs&=~DECL_PRIVATE
-				' we can be both internal and protected, so don't reset DECL_PROTECTED
+				decl_attrs&=~DECL_PROTECTED
 			Case "protected"
 				NextToke
 				decl_attrs|=DECL_PROTECTED
 				decl_attrs&=~DECL_PRIVATE
-				' we can be both internal and protected, so don't reset DECL_INTERNAL
+				decl_attrs&=~DECL_INTERNAL
+			Case "protectedinternal"
+				NextToke
+				decl_attrs|=DECL_PROTECTED
+				decl_attrs|=DECL_INTERNAL
+				decl_attrs&=~DECL_PRIVATE
 			Case "const","global","field"
 				If (attrs & CLASS_INTERFACE) And _toke<>"const" Err "Interfaces can only contain constants and methods."
 				classDecl.InsertDecls ParseDecls( _toke,decl_attrs )
