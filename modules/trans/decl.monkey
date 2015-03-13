@@ -11,6 +11,7 @@ Const DECL_PRIVATE=		$000200
 Const DECL_ABSTRACT=	$000400
 Const DECL_FINAL=		$000800
 Const DECL_INTERNAL=	$004000
+Const DECL_PROTECTED=	$008000
 
 Const CLASS_INTERFACE=	$001000
 Const CLASS_THROWABLE=	$002000
@@ -80,6 +81,10 @@ Class Decl
 		Return (attrs & DECL_INTERNAL)<>0
 	End
 	
+	Method IsProtected()
+		Return (attrs & DECL_PROTECTED)<>0
+	End
+	
 	Method IsSemanted()
 		Return (attrs & DECL_SEMANTED)<>0
 	End
@@ -109,7 +114,34 @@ Class Decl
 	End
 	
 	Method CheckAccess()
-		If IsPrivate() And ModuleScope()<>_env.ModuleScope() Or IsInternal() And ModuleScope().filedir<>_env.ModuleScope().filedir
+		' if no environment, just let us through
+		If Not _env Return True
+		Local accessible:=False
+		If ModuleScope()=_env.ModuleScope()
+			' if same module, always accessible
+			accessible=True
+		Elseif Not IsInternal() And Not IsProtected()
+			' if not internal and not protected, accessible if not private
+			' this caters for public
+			accessible=Not IsPrivate()
+		Else
+			' if internal and same directory, accessible
+			If IsInternal() And ModuleScope().filedir=_env.ModuleScope().filedir accessible = True
+			' if protected and subclassed, accessible
+			If Not accessible And IsProtected()
+				Local thisClass:=ClassScope()
+				Local currentClass:=_env.ClassScope()
+				While Not accessible And currentClass
+					If currentClass=thisClass
+						accessible=True
+					Else
+						currentClass=currentClass.superClass
+					End
+				End
+			End
+		End
+		' if inaccessible, throw an error
+		If Not accessible
 			Local fdecl:=_env.FuncScope()
 			If fdecl And fdecl.attrs & DECL_REFLECTOR Return True
 			Return False
@@ -119,10 +151,14 @@ Class Decl
 	
 	Method AssertAccess()
 		If Not CheckAccess()
-			If IsInternal()
+			If IsProtected()
+				Err ToString() +" is protected."
+			Elseif IsInternal()
 				Err ToString() +" is internal."
-			Else
+			Elseif IsPrivate()
 				Err ToString() +" is private."
+			Else
+				Err ToString() +" is inaccessible."
 			End
 		Endif
 	End

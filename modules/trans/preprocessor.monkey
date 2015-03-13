@@ -87,7 +87,17 @@ Function PreProcess$( path$,mdecl:ModuleDecl=Null )
 						Case "private"
 							attrs=DECL_PRIVATE
 						Case "internal"
-							attrs=DECL_INTERNAL
+							If attrs<>DECL_PROTECTED
+								attrs=DECL_INTERNAL
+							Else
+								attrs|=DECL_INTERNAL
+							End
+						Case "protected"
+							If attrs<>DECL_INTERNAL
+								attrs=DECL_PROTECTED
+							Else
+								attrs|=DECL_PROTECTED
+							End
 						Case "import"
 							While toker.TokeType=TOKE_SPACE
 								toke+=toker.Toke
