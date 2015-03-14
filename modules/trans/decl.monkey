@@ -85,10 +85,6 @@ Class Decl
 		Return (attrs & DECL_PROTECTED)<>0
 	End
 	
-	Method IsProtectedInternal()
-		Return IsInternal() And IsProtected()
-	End
-	
 	Method IsPublic()
 		Return Not IsPrivate() And Not IsInternal() And Not IsProtected()
 	End
@@ -155,9 +151,7 @@ Class Decl
 	
 	Method AssertAccess()
 		If Not CheckAccess()
-			If IsProtectedInternal()
-				Err ToString() +" is protected and internal."
-			Elseif IsProtected()
+			If IsProtected()
 				Err ToString() +" is protected."
 			Elseif IsInternal()
 				Err ToString() +" is internal."
