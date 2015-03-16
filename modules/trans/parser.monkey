@@ -1522,9 +1522,23 @@ Class Parser
 			Case "private"
 				NextToke
 				decl_attrs|=DECL_PRIVATE
+				decl_attrs&=~DECL_INTERNAL
+				decl_attrs&=~DECL_PROTECTED
 			Case "public"
 				NextToke
 				decl_attrs&=~DECL_PRIVATE
+				decl_attrs&=~DECL_INTERNAL
+				decl_attrs&=~DECL_PROTECTED
+			Case "internal"
+				NextToke
+				decl_attrs|=DECL_INTERNAL
+				decl_attrs&=~DECL_PRIVATE
+				decl_attrs&=~DECL_PROTECTED
+			Case "protected"
+				NextToke
+				decl_attrs|=DECL_PROTECTED
+				decl_attrs&=~DECL_PRIVATE
+				decl_attrs&=~DECL_INTERNAL
 			Case "const","global","field"
 				If (attrs & CLASS_INTERFACE) And _toke<>"const" Err "Interfaces can only contain constants and methods."
 				classDecl.InsertDecls ParseDecls( _toke,decl_attrs )
@@ -1599,6 +1613,9 @@ Class Parser
 			Case "private"
 				NextToke
 				attrs=DECL_PRIVATE
+			Case "internal"
+				NextToke
+				attrs=DECL_INTERNAL
 			Case "import"
 				NextToke
 				If _tokeType=TOKE_STRINGLIT
@@ -1664,6 +1681,9 @@ Class Parser
 			Case "private"
 				NextToke
 				attrs=DECL_PRIVATE
+			Case "internal"
+				NextToke
+				attrs=DECL_INTERNAL
 			Case "extern"
 				If ENV_SAFEMODE
 					If _app.mainModule=_module

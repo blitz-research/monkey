@@ -10,6 +10,8 @@ Const DECL_EXTERN=		$000100
 Const DECL_PRIVATE=		$000200
 Const DECL_ABSTRACT=	$000400
 Const DECL_FINAL=		$000800
+Const DECL_INTERNAL=	$004000
+Const DECL_PROTECTED=	$008000
 
 Const CLASS_INTERFACE=	$001000
 Const CLASS_THROWABLE=	$002000
@@ -75,6 +77,18 @@ Class Decl
 		Return (attrs & DECL_ABSTRACT)<>0
 	End
 	
+	Method IsInternal()
+		Return (attrs & DECL_INTERNAL)<>0
+	End
+	
+	Method IsProtected()
+		Return (attrs & DECL_PROTECTED)<>0
+	End
+	
+	Method IsPublic()
+		Return Not IsPrivate() And Not IsInternal() And Not IsProtected()
+	End
+	
 	Method IsSemanted()
 		Return (attrs & DECL_SEMANTED)<>0
 	End
@@ -104,17 +118,48 @@ Class Decl
 	End
 	
 	Method CheckAccess()
-		If IsPrivate() And ModuleScope()<>_env.ModuleScope()
-			Local fdecl:=_env.FuncScope()
-			If fdecl And fdecl.attrs & DECL_REFLECTOR Return True
-			Return False
-		Endif
-		Return True
+		' if no environment, just let us through
+		If Not _env Return True
+		
+		' if public, always accessible
+		If IsPublic() Return True
+		
+		' if same module, always accessible
+		If ModuleScope()=_env.ModuleScope() Return True
+		
+		' if not private, check internal/protected
+		If Not IsPrivate()
+			' if internal and same directory, accessible
+			If IsInternal() And ModuleScope().filedir=_env.ModuleScope().filedir Return True
+			
+			' if protected and subclassed, accessible
+			If IsProtected()
+				Local thisClass:=ClassScope()
+				Local currentClass:=_env.ClassScope()
+				While currentClass
+					If currentClass=thisClass Return True
+					currentClass=currentClass.superClass
+				End
+			End
+		End
+		
+		' inaccessible, throw an error
+		Local fdecl:=_env.FuncScope()
+		If fdecl And fdecl.attrs & DECL_REFLECTOR Return True
+		Return False
 	End
 	
 	Method AssertAccess()
 		If Not CheckAccess()
-			Err ToString() +" is private."
+			If IsProtected()
+				Err ToString() +" is protected."
+			Elseif IsInternal()
+				Err ToString() +" is internal."
+			Elseif IsPrivate()
+				Err ToString() +" is private."
+			Else
+				Err ToString() +" is inaccessible."
+			End
 		Endif
 	End
 	
@@ -1221,7 +1266,7 @@ Const MODULE_SEMANTALL=2
 
 Class ModuleDecl Extends ScopeDecl
 
-	Field modpath$,rmodpath$,filepath$
+	Field modpath$,rmodpath$,filepath$,filedir$
 	Field imported:=New StringMap<ModuleDecl>		'Maps filepath to modules
 	Field pubImported:=New StringMap<ModuleDecl>	'Ditto for publicly imported modules
 	
@@ -1237,6 +1282,7 @@ Class ModuleDecl Extends ScopeDecl
 		Self.modpath=modpath
 		Self.rmodpath=modpath
 		Self.filepath=filepath
+		Self.filedir=ExtractDir(filepath)
 		
 		If modpath.Contains( "." )
 			Local bits:=modpath.Split( "." ),n:=bits.Length
