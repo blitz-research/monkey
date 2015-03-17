@@ -10,6 +10,7 @@ Const DECL_EXTERN=		$000100
 Const DECL_PRIVATE=		$000200
 Const DECL_ABSTRACT=	$000400
 Const DECL_FINAL=		$000800
+Const DECL_PROTECTED=	$004000
 
 Const CLASS_INTERFACE=	$001000
 Const CLASS_THROWABLE=	$002000
@@ -75,6 +76,14 @@ Class Decl
 		Return (attrs & DECL_ABSTRACT)<>0
 	End
 	
+	Method IsProtected()
+		Return (attrs & DECL_PROTECTED)<>0
+	End
+	
+	Method IsPublic()
+		Return Not IsPrivate() And Not IsProtected()
+	End
+	
 	Method IsSemanted()
 		Return (attrs & DECL_SEMANTED)<>0
 	End
@@ -104,17 +113,40 @@ Class Decl
 	End
 	
 	Method CheckAccess()
-		If IsPrivate() And ModuleScope()<>_env.ModuleScope()
-			Local fdecl:=_env.FuncScope()
-			If fdecl And fdecl.attrs & DECL_REFLECTOR Return True
-			Return False
-		Endif
-		Return True
+		' if no environment, just let us through
+		If Not _env Return True
+		
+		' if public, always accessible
+		If IsPublic() Return True
+		
+		' if same module, always accessible
+		If ModuleScope()=_env.ModuleScope() Return True
+		
+		' if protected and subclassed, accessible
+		If IsProtected()
+			Local thisClass:=ClassScope()
+			Local currentClass:=_env.ClassScope()
+			While currentClass
+				If currentClass=thisClass Return True
+				currentClass=currentClass.superClass
+			End
+		End
+		
+		' inaccessible, throw an error
+		Local fdecl:=_env.FuncScope()
+		If fdecl And fdecl.attrs & DECL_REFLECTOR Return True
+		Return False
 	End
 	
 	Method AssertAccess()
 		If Not CheckAccess()
-			Err ToString() +" is private."
+			If IsProtected()
+				Err ToString() +" is protected."
+			Elseif IsPrivate()
+				Err ToString() +" is private."
+			Else
+				Err ToString() +" is inaccessible."
+			End
 		Endif
 	End
 	
