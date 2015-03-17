@@ -1522,8 +1522,14 @@ Class Parser
 			Case "private"
 				NextToke
 				decl_attrs|=DECL_PRIVATE
+				decl_attrs&=~DECL_PROTECTED
 			Case "public"
 				NextToke
+				decl_attrs&=~DECL_PRIVATE
+				decl_attrs&=~DECL_PROTECTED
+			Case "protected"
+				NextToke
+				decl_attrs|=DECL_PROTECTED
 				decl_attrs&=~DECL_PRIVATE
 			Case "const","global","field"
 				If (attrs & CLASS_INTERFACE) And _toke<>"const" Err "Interfaces can only contain constants and methods."
