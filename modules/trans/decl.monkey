@@ -1234,14 +1234,19 @@ Class ClassDecl Extends ScopeDecl
 		For Local iface:=Eachin implmentsAll
 			For Local decl:=Eachin iface.SemantedMethods()
 				Local found
-				For Local decl2:=Eachin SemantedMethods( decl.ident )
-					If decl.EqualsFunc( decl2 )
-						If decl2.munged
-							Err "Extern methods cannot be used to implement interface methods."
+				Local cdecl:=Self
+				While cdecl And Not found
+					For Local decl2:=Eachin cdecl.SemantedMethods( decl.ident )
+						If decl.EqualsFunc( decl2 )
+							If decl2.munged
+								Err "Extern methods cannot be used to implement interface methods."
+							Endif
+							found=True
 						Endif
-						found=True
-					Endif
-				Next
+					Next
+					cdecl=cdecl.superClass
+				Wend
+
 				If Not found
 					Err decl.ToString()+" must be implemented by class "+ToString()
 				Endif
