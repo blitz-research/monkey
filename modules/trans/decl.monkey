@@ -1261,7 +1261,25 @@ End
 Const MODULE_STRICT=1
 Const MODULE_SEMANTALL=2
 
+Class DeclMDeclPair
+	Field tdecl:Object
+	Field mdecl:ModuleDecl
+End
+
+Class SynonymList
+	Field list:List<DeclMDeclPair> = New List<DeclMDeclPair>
+End
+
 Class ModuleDecl Extends ScopeDecl
+
+	Global master_uid:Int = 0
+
+	Field uid:Int = 0
+	Field indirectMapsPrepped:Bool = False
+	Field indirectDeclMapPublicOnly:= New StringMap<SynonymList>
+	Field indirectDeclMapPublicPrivate:= New StringMap<SynonymList>
+	Field accessibleModuleScopesPublic:= New IntMap<ModuleDecl>
+	Field accessibleModuleScopesPublicPrivate:= New IntMap<ModuleDecl>
 
 	Field modpath$,rmodpath$,filepath$
 	Field imported:=New StringMap<ModuleDecl>		'Maps filepath to modules
@@ -1273,6 +1291,9 @@ Class ModuleDecl Extends ScopeDecl
 	End
 	
 	Method New( ident$,attrs,munged$,modpath$,filepath$,app:AppDecl )
+	
+		Self.uid = master_uid
+		master_uid += 1
 	
 		Self.ident=ident
 		Self.attrs=attrs
@@ -1296,7 +1317,243 @@ Class ModuleDecl Extends ScopeDecl
 		Return (attrs & MODULE_STRICT)<>0
 	End
 	
-	Method GetDecl:Object( ident$ )
+	Method GetDeclFromImports:Object(ident:String, map:StringMap<SynonymList>, decl:Object)
+	
+		Local candidates:SynonymList = map.Get(ident)
+		If Not candidates
+			ScopeDecl.GetDecl_Fail += 1
+			Return decl
+		EndIf
+		ScopeDecl.GetDecl_Success += 1
+		Local n:= candidates.list.FirstNode
+		Local pair:DeclMDeclPair
+		While n
+			pair = n.Value
+			Local mdecl:ModuleDecl = pair.mdecl
+			Local tdecl:Object = pair.tdecl
+			
+			'AC: Handle aliases here (it's normally done inside Super.GetDecl but we don't call that.)
+			Local adecl:= AliasDecl(tdecl)
+			If adecl
+				tdecl = Null
+				If adecl.CheckAccess() tdecl = adecl.decl
+			Endif
+			
+			'ignore private decls
+			Local ddecl:= Decl(tdecl)
+			If ddecl And Not ddecl.CheckAccess() tdecl=Null
+				
+			'ignore funclists with no public funcs
+			Local flist:=FuncDeclList( tdecl )
+			If flist
+				Local pub:=False
+				For Local fdecl:=Eachin flist
+					If Not fdecl.CheckAccess() Continue
+					pub=True
+					Exit
+				Next
+				If Not pub tdecl=Null
+			EndIf
+			
+			If tdecl And tdecl <> decl
+				If mdecl=Self Return tdecl
+				If decl
+					'AC: Easier to let the slow version handle this error:
+					GetDecl_Slow(ident)
+					'AC: We should definitely not get back from that call. If we do, this optimised process is broken!
+					Err "Uh oh! Duplicate identifier '" + ident + "' found via GelDecl but not via GetDecl_Slow!"
+				Endif
+				decl=tdecl
+			Endif		
+			n = n.NextNode
+		Wend
+		
+		Return decl
+	
+	End
+		
+	Method BuildIndirectDeclMaps()
+
+		indirectDeclMapPublicOnly = New StringMap<SynonymList>
+		indirectDeclMapPublicPrivate = New StringMap<SynonymList>
+		accessibleModuleScopesPublic = New IntMap<ModuleDecl>
+		accessibleModuleScopesPublicPrivate = New IntMap<ModuleDecl>
+		
+		indirectMapsPrepped = True
+		Local todo:= New List<ModuleDecl>
+		Local accListPublic:List<ModuleDecl> = New List<ModuleDecl>
+		Local accListPublicPrivate:List<ModuleDecl> = New List<ModuleDecl>
+		
+		'AC: First create the list of accessible modules publicly available via this module scope.
+		
+		todo.AddLast Self
+		accessibleModuleScopesPublic.Set(uid, Self)
+		accListPublic.AddLast(Self)
+		accListPublicPrivate.AddLast(Self)
+
+		While Not todo.IsEmpty()
+	
+			Local mdecl:ModuleDecl = todo.RemoveLast()
+						
+			Local imps:= mdecl.pubImported
+
+			For Local mdecl2:= EachIn imps.Values()
+				If Not accessibleModuleScopesPublic.Contains(mdecl2.uid)
+					todo.AddLast mdecl2
+					accessibleModuleScopesPublic.Set(mdecl2.uid, mdecl2)
+					accListPublic.AddLast(mdecl2)
+					accListPublicPrivate.AddLast(mdecl2)
+				Endif
+			Next
+		Wend
+		
+		'AC: Now create an expanded list of modules available privately to this module scope.
+		
+		Local extraPrivates:Bool = False
+		accessibleModuleScopesPublicPrivate.Clone(accessibleModuleScopesPublic)
+		For Local mdecl2:= EachIn imported.Values()
+			If Not accessibleModuleScopesPublicPrivate.Contains(mdecl2.uid)
+				todo.AddLast mdecl2
+				accessibleModuleScopesPublicPrivate.Set(mdecl2.uid, mdecl2)
+				accListPublicPrivate.AddLast(mdecl2)
+				extraPrivates = True
+			Endif
+		Next
+		
+		While Not todo.IsEmpty()
+	
+			Local mdecl:ModuleDecl = todo.RemoveLast()
+						
+			Local imps:= mdecl.pubImported
+
+			For Local mdecl2:= EachIn imps.Values()
+				If Not accessibleModuleScopesPublicPrivate.Contains(mdecl2.uid)
+					todo.AddLast mdecl2
+					accessibleModuleScopesPublicPrivate.Set(mdecl2.uid, mdecl2)
+					accListPublicPrivate.AddLast(mdecl2)
+					extraPrivates = True
+				Endif
+			Next
+		Wend
+		
+		'AC: Now build decl maps from those accessibility lists
+		BuildIndirectDeclMap(indirectDeclMapPublicOnly, accListPublic)
+		If extraPrivates
+			BuildIndirectDeclMap(indirectDeclMapPublicPrivate, accListPublicPrivate)
+		Else
+			indirectDeclMapPublicPrivate = indirectDeclMapPublicOnly
+		EndIf
+
+	End
+	
+	Method AddIndirectDecl(idm:StringMap<SynonymList>, ident:String, decl:Object, mdecl:ModuleDecl)
+		Local syn:SynonymList = idm.Get(ident)
+		Local dmdp:DeclMDeclPair
+		If syn = Null
+			syn = New SynonymList
+			idm.Set(ident, syn)
+		EndIf
+		Local n:= syn.list.FirstNode
+		While n
+			dmdp = n.Value
+			If dmdp.tdecl = decl
+				Return
+			EndIf
+			n = n.NextNode
+		Wend
+		
+		dmdp = New DeclMDeclPair
+		dmdp.tdecl = decl
+		dmdp.mdecl = mdecl
+		syn.list.AddLast(dmdp)
+	End
+	
+	Method BuildIndirectDeclMap(idm:StringMap<SynonymList>, acclist:List<ModuleDecl>)
+		Local mn:= acclist.FirstNode
+		While mn
+			Local declmap:StringMap<Object> = mn.Value.declsMap
+			Local dn:= declmap.FirstNode
+			While dn
+				AddIndirectDecl(idm, dn.Key, dn.Value, mn.Value)
+				dn = dn.NextNode
+			Wend
+			mn = mn.NextNode
+		Wend
+	End
+	
+	Method GetDecl:Object(ident:String)
+	
+		If Not indirectMapsPrepped
+			'Print "Building IDMs for " + Self.ident + "..."
+			BuildIndirectDeclMaps()
+			'Print "Done."
+		EndIf
+		
+		If Not _env
+			Return GetDecl_Slow(ident)
+		EndIf
+		
+		Local mdecl:ModuleDecl = _env.ModuleScope()
+		
+		Local decl:Object
+		
+		If Self = mdecl
+			'AC: Just check the indirect map that includes this module's public AND private imports.
+			'Print "Scope match! Checking public/private map."
+			decl = GetDeclFromImports(ident, indirectDeclMapPublicPrivate, Null)
+			'Print "Done."
+		Else
+			If accessibleModuleScopesPublic.Contains(mdecl.uid)
+				If Not mdecl.indirectMapsPrepped
+					mdecl.BuildIndirectDeclMaps()
+				EndIf
+				'AC: The _env's own module scope is accessible from here.
+				'AC: Check the indirect map that only includes this module's public imports,
+				'    AND the _env's own module scope's public/private map.
+				'Print "Scope mismatch, but env scope accessible! Checking public map and env scope public/private map."
+				decl = GetDeclFromImports(ident, mdecl.indirectDeclMapPublicPrivate, GetDeclFromImports(ident, indirectDeclMapPublicOnly, Null))
+				'Print "Done."
+			Else
+				'AC: The _env's own module scope is NOT accessible from here.
+				'    Just check our public imports.
+				'Print "Scope mismatch, env scope inaccessible! Checking public map."
+				decl = GetDeclFromImports(ident, indirectDeclMapPublicOnly, Null)
+				'Print "Done."
+			EndIf
+		EndIf
+		
+		#rem
+
+		'AC: Uncomment this to validate decls found against the original method, and debug why they're different (if they are!)
+		Local decl2:Object = GetDecl_Slow(ident)		
+		
+		If decl <> decl2
+			'AC: Uh oh.
+			DebugStop
+			'AC: Do it again so we can watch.
+			decl2 = GetDecl_Slow(ident)
+			DebugStop
+			'AC: Build the maps again so we can watch.
+			BuildIndirectDeclMaps()
+			DebugStop
+			'AC: Retrieve the decl again so we can watch.
+			If Self = mdecl
+				decl = GetDeclFromImports(ident, indirectDeclMapPublicPrivate, Null)
+			Else
+				If accessibleModuleScopesPublic.Contains(mdecl.uid)
+					decl = GetDeclFromImports(ident, mdecl.indirectDeclMapPublicPrivate, GetDeclFromImports(ident, indirectDeclMapPublicOnly, Null))
+				Else
+					decl = GetDeclFromImports(ident, indirectDeclMapPublicOnly, Null)
+				EndIf
+			EndIf
+		EndIf
+		#end
+		
+		Return decl
+	
+	End
+	
+	Method GetDecl_Slow:Object(ident:String)
 	
 		Local todo:=New List<ModuleDecl>
 		Local done:=New StringMap<ModuleDecl>
@@ -1304,7 +1561,7 @@ Class ModuleDecl Extends ScopeDecl
 		todo.AddLast Self
 		done.Insert filepath,Self
 		
-		Local decl:Object,declmod$
+		Local decl:Object, declmod:String
 		
 		While Not todo.IsEmpty()
 	
