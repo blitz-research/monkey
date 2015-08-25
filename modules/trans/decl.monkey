@@ -1273,9 +1273,10 @@ End
 Class ModuleDecl Extends ScopeDecl
 
 	Global master_uid:Int = 0
-
+	Global master_im_version:Int = 1
+	
 	Field uid:Int = 0
-	Field indirectMapsPrepped:Bool = False
+	Field indirectMapsVersion:Int = 0
 	Field indirectDeclMapPublicOnly:= New StringMap<SynonymList>
 	Field indirectDeclMapPublicPrivate:= New StringMap<SynonymList>
 	Field accessibleModuleScopesPublic:= New IntMap<ModuleDecl>
@@ -1379,7 +1380,7 @@ Class ModuleDecl Extends ScopeDecl
 		accessibleModuleScopesPublic = New IntMap<ModuleDecl>
 		accessibleModuleScopesPublicPrivate = New IntMap<ModuleDecl>
 		
-		indirectMapsPrepped = True
+		indirectMapsVersion = master_im_version
 		Local todo:= New List<ModuleDecl>
 		Local accListPublic:List<ModuleDecl> = New List<ModuleDecl>
 		Local accListPublicPrivate:List<ModuleDecl> = New List<ModuleDecl>
@@ -1504,7 +1505,7 @@ Class ModuleDecl Extends ScopeDecl
 			'Print "Done."
 		Else
 			If accessibleModuleScopesPublic.Contains(mdecl.uid)
-				If Not mdecl.indirectMapsPrepped
+				If mdecl.indirectMapsVersion < master_im_version
 					mdecl.BuildIndirectDeclMaps()
 				EndIf
 				'AC: The _env's own module scope is accessible from here.
@@ -1703,6 +1704,15 @@ Class ModuleDecl Extends ScopeDecl
 		attrs|=MODULE_SEMANTALL
 	End
 	
+	Method InsertDecl(decl:Decl)
+		Super.InsertDecl(decl)
+		master_im_version += 1
+	End
+
+	Method InsertDecls(decls:List<Decl>)
+		Super.InsertDecls(decls)
+		master_im_version += 1
+	End
 End
 
 Class AppDecl Extends ScopeDecl
