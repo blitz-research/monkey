@@ -368,6 +368,9 @@ End
 
 Class ScopeDecl Extends Decl
 
+	Global GetDecl_Fail:Int
+	Global GetDecl_Success:Int
+
 Private
 
 	Field decls:=New List<Decl>
@@ -1484,13 +1487,14 @@ Class ModuleDecl Extends ScopeDecl
 	
 	Method GetDecl:Object(ident:String)
 	
-		If Not indirectMapsPrepped
+		If indirectMapsVersion < master_im_version
 			'Print "Building IDMs for " + Self.ident + "..."
 			BuildIndirectDeclMaps()
 			'Print "Done."
 		EndIf
 		
 		If Not _env
+			'AC: 'Slow' version probably quicker in this case as it's a smaller stringmap.
 			Return GetDecl_Slow(ident)
 		EndIf
 		
