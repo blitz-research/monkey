@@ -458,7 +458,7 @@ void BBIosGame::TouchesEvent( UIEvent *event ){
 			p.x*=scaleFactor;
 			p.y*=scaleFactor;
 			
-			TouchEvent( ev,pid,p.x,p.y );
+			TouchEvent( ev,pid,p.x,p.y, _touches[pid].force, _touches[pid].maximumPossibleForce );
 		}
 	}
 }

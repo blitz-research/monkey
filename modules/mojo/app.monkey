@@ -130,8 +130,8 @@ Class GameDelegate Extends BBGameDelegate
 		_input.MouseEvent event,data,x,y
 	End
 	
-	Method TouchEvent:Void( event:Int,data:Int,x:Float,y:Float )
-		_input.TouchEvent event,data,x,y
+	Method TouchEvent:Void( event:Int,data:Int,x:Float,y:Float, force:Float, maximumPossibleForce:Float )
+		_input.TouchEvent event,data,x,y,force,maximumPossibleForce
 	End
 	
 	Method MotionEvent:Void( event:Int,data:Int,x:Float,y:Float,z:Float )

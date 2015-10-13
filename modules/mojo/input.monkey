@@ -80,6 +80,14 @@ Function TouchY#( index=0 )
 	Return device.TouchY( index )
 End
 
+Function TouchForce#( index=0 )
+	Return device.TouchForce( index )
+End
+
+Function TouchMaximumPossibleForce#( index= 0)
+	Return device.TouchMaximumPossibleForce( index )
+End
+
 Function TouchDown( index=0 )
 	Return device.KeyDown( KEY_TOUCH0+index )
 End
