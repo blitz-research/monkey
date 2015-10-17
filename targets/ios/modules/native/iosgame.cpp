@@ -457,8 +457,13 @@ void BBIosGame::TouchesEvent( UIEvent *event ){
 			CGPoint p=[touch locationInView:view];
 			p.x*=scaleFactor;
 			p.y*=scaleFactor;
-			
-			TouchEvent( ev,pid,p.x,p.y, _touches[pid].force, _touches[pid].maximumPossibleForce );
+
+			#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+			if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"9.0")) {
+				TouchEvent( ev,pid,p.x,p.y, _touches[pid].force, _touches[pid].maximumPossibleForce );
+			} else {
+				TouchEvent( ev,pid,p.x,p.y, 0, 0 );
+			}
 		}
 	}
 }
