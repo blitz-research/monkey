@@ -58,6 +58,7 @@ Class BBGameDelegate Abstract
 	Method KeyEvent:Void( event:Int,data:Int ) Abstract
 	Method MouseEvent:Void( event:Int,data:Int,x:Float,y:Float ) Abstract
 	Method TouchEvent:Void( event:Int,data:Int,x:Float,y:Float,force:Float,maximumPossibleForce:Float) Abstract
+	Method TouchEvent:Void( event:Int,data:Int,x:Float,y:Float) Abstract
 	Method MotionEvent:Void( event:Int,data:Int,x:Float,y:Float,z:Float ) Abstract
 	Method DiscardGraphics:Void() Abstract
 End
