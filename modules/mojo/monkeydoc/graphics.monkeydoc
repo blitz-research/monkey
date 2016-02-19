@@ -524,7 +524,7 @@ Discard any underlying resources associated with the image.
 This isn't normally necessary because automatic memory management will eventually take care of this for you. However, on devices with limited resources this may which to do this manually.
 
 
-# Method WritePixels:Void(pixels:Int[],x:Int,y:Int,width:Int,height:Int,arrayOffset:Int=0,arrayPitch:Int=0)
+# Method WritePixels:Void(pixels:Int[],x:Int,y:Int,width:Int,height:Int,arrayOffset:Int=0,arrayPitch:Int=0,relative:Bool=True)
 
 Copies a rectangular section of pixels from an int array to the image.
 
@@ -533,3 +533,5 @@ The pixel data must be stored in int-per-pixel ARGB format, with the alpha compo
 The optional @arrayOffset parameter allows you to specify an index into the array from which to start reading pixel values.
 
 The optional @arrayPitch parameter allows you to specify a 'pitch' - the number of array elements between successive rows in the array. If this is 0, then @width is used as pitch, meaning pixel data is assumed to be 'tightly packed'.
+
+The optional @relative parameter allows you to toggle between image-relative and surface-relative coordinates. This controls how the @x and @y parameters behave.
