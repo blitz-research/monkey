@@ -123,18 +123,31 @@ Class Image
 		Endif
 	End
 	
-	Method WritePixels( pixels[],x,y,width,height,offset=0,pitch=0 )
+	Method WritePixels( pixels[],x,y,width,height,offset=0,pitch=0,relative?=True )
 		If Not pitch pitch=width
 
 #If CONFIG="debug"
-		Local w:=Self.width
+		Local w#, h#
+		
+		If relative
+			w = Self.width
+			h = Self.height
+		Else
+			w = surface.Width
+			h = surface.Height
+		Endif
+		
 		If flags & XPadding w+=2
-		Local h:=Self.height
 		If flags & YPadding h+=2
+		
 		If x<0 Or y<0 Or x+width>w Or y+height>h Error "Invalid pixel rectangle"
 		If offset<0 Or pitch<0 Or offset+(height-1)*pitch+width>pixels.Length Error "Invalid array rectangle"
 #End
-		device.WritePixels2 surface,pixels,x,y,width,height,offset,pitch
+		If relative
+			device.WritePixels2 surface,pixels,x+frames[0].x,y+frames[0].y,width,height,offset,pitch
+		Else
+			device.WritePixels2 surface,pixels,x,y,width,height,offset,pitch
+		Endif
 	End
 	
 	'***** INTERNAL *****
