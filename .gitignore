@@ -45,3 +45,5 @@ desktop.ini
 !/targets/winrt_win8
 !/targets/winrt_winphone8
 !/targets/xna
+src/.bmx/rebuildall.bmx.console.release.win32.x86.o
+src/.bmx/rebuildall.bmx.console.release.win32.x86.s
