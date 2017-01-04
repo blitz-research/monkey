@@ -6,7 +6,7 @@ The mojo and mojo2 modules are released under proprietary licenses.
 
 The zlib/libpng License
 
-Copyright (c) 2013 Blitz Research Ltd
+Copyright (c) 2014 Blitz Research Ltd
 
 This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
 
