@@ -539,6 +539,8 @@ void BBGlfwGame::OnWindowClose( GLFWwindow *window ){
 	glfwSetWindowShouldClose( _glfwGame->_window,0 );
 	_glfwGame->KeyEvent( BBGameEvent::KeyDown,0x1b0 );
 	_glfwGame->KeyEvent( BBGameEvent::KeyUp,0x1b0 );
+	
+	glfwSetWindowShouldClose(_glfwGame->_window, 0); // GL_FALSE
 }
 
 void BBGlfwGame::OnWindowSize( GLFWwindow *window,int width,int height ){
