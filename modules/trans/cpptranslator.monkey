@@ -467,7 +467,17 @@ Class CppTranslator Extends CTranslator
 			args+=TransType( arg.type )
 		Next
 		
-		Local t$=TransType( decl.retType )+" "+decl.munged+Bra( args )
+		Local t:String
+		
+		If decl.IsLibrary() Then
+			'#pragma comment(linker, ~q/EXPORT:SomeFunction=_SomeFunction@@@23mangledstuff#@@@@~q)
+			'Emit "#pragma comment(linker, ~q/EXPORT:" + decl.munged["bb_dll_".Length ..] + "=" + decl.munged + "~q)"
+			Emit "extern ~qC~q {"
+			t = "__declspec(dllexport) " + TransType(decl.retType) + " __stdcall" + " " + decl.munged + Bra(args)
+		Else
+			t = TransType(decl.retType) + " " + decl.munged + Bra(args)
+		EndIf
+		
 		If decl.IsAbstract() t+="=0"
 		
 		Local q$
@@ -478,7 +488,11 @@ Class CppTranslator Extends CTranslator
 			q+="static "
 		Endif
 		
-		Emit q+t+";"
+		Emit q + t + ";"
+		
+		If decl.IsLibrary() Then
+			Emit "}"
+		EndIf
 	End
 	
 	Method EmitFuncDecl( decl:FuncDecl )
@@ -499,7 +513,13 @@ Class CppTranslator Extends CTranslator
 		Local id$=decl.munged
 		If decl.ClassScope() id=decl.ClassScope().munged+"::"+id
 		
-		Emit TransType( decl.retType )+" "+id+Bra( args )+"{"
+		'note: emit the right code for exporting a dll function
+		If decl.IsLibrary() Then
+			Emit "__declspec(dllexport) " + TransType(decl.retType) + " __stdcall" + " " + id + Bra(args) + "{"
+		Else
+			Emit TransType(decl.retType) + " " + id + Bra(args) + "{"
+		EndIf
+		
 		
 		BeginLoop
 		
@@ -722,7 +742,14 @@ Class CppTranslator Extends CTranslator
 	
 	Method TransApp$( app:AppDecl )
 	
-		If Not GetConfigVar( "CPP_GC_MODE" ) SetConfigVar "CPP_GC_MODE","1",Type.boolType
+		'note:GC mode changed for dll creation
+		If Not GetConfigVar("CPP_GC_MODE") Then
+			If GetConfigVar("CPP_BUILD_DLL") Then
+				SetConfigVar "CPP_GC_MODE", "2", Type.intType
+			Else
+				SetConfigVar "CPP_GC_MODE", "1", Type.boolType
+			EndIf
+		EndIf
 		
 		gc_mode=Int( GetConfigVar( "CPP_GC_MODE" ) )
 	

@@ -47,7 +47,11 @@ Class StdcppBuilder Extends Builder
 		
 		If tcc.opt_build
 
-			Local out:="main_"+HostOS
+			Local out:= "main_" + HostOS
+			'note:change filename for dlls to default to .dll instead of .exe
+			If GetConfigVar("CPP_BUILD_DLL") Then
+				out += ".dll"
+			EndIf
 			DeleteFile out
 			
 			Local OPTS:="",LIBS:=""
@@ -70,6 +74,11 @@ Class StdcppBuilder Extends Builder
 			Case "release"
 				OPTS+=" -O3 -DNDEBUG"
 			End
+			
+			'note:Introduce additional flags when compiling a dll
+			If GetConfigVar("CPP_BUILD_DLL") Then
+				SetConfigVar("CC_OPTS", GetConfigVar("CC_OPTS") + " -shared -Wl,--add-stdcall-alias ")
+			EndIf
 			
 			Local cc_opts:=GetConfigVar( "CC_OPTS" )
 			If cc_opts OPTS+=" "+cc_opts.Replace( ";"," " )

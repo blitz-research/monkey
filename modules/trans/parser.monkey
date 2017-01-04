@@ -1331,14 +1331,20 @@ Class Parser
 
 		SetErr
 		
+		'note:Trigger dll construction recognized by cpptranslator
 		If CParse( "method" )
-			attrs|=FUNC_METHOD
-		Else If Not CParse( "function" )
+			attrs |= FUNC_METHOD
+		ElseIf CParse("dllfunction")
+			If GetConfigVar("CPP_BUILD_DLL") <> "1" Then
+				SetConfigVar("CPP_BUILD_DLL", "1", Type.boolType)
+			EndIf
+			attrs |= DECL_LIBRARY
+		Else If Not CParse("function")
 			InternalErr
-		Endif
+		EndIf
 		
 		attrs|=_defattrs
-	
+		
 		Local id$
 		Local ty:Type
 		
@@ -1403,7 +1409,10 @@ Class Parser
 				funcDecl.munged=ParseStringLit()
 				'Array $resize hack! move outta here...
 				If funcDecl.munged="$resize" funcDecl.retType=Type.emptyArrayType
-			Endif
+			EndIf
+		'note:Use RAW name & Prevent function name from being changed by later stages
+		ElseIf attrs & DECL_LIBRARY
+			funcDecl.munged = funcDecl.ident
 		Endif
 		
 		If funcDecl.IsExtern() Or funcDecl.IsAbstract() Return funcDecl
@@ -1416,8 +1425,11 @@ Class Parser
 
 		NextToke
 
+		'note:parse some dllfunctions
 		If attrs & (FUNC_CTOR|FUNC_METHOD)
 			CParse "method"
+		ElseIf attrs & DECL_LIBRARY
+			CParse "dllfunction"
 		Else
 			CParse "function"
 		Endif
@@ -1680,9 +1692,10 @@ Class Parser
 			Case "class"
 				_module.InsertDecl ParseClassDecl( attrs )
 			Case "interface"
-				_module.InsertDecl ParseClassDecl( attrs )
-			Case "function"
-				_module.InsertDecl ParseFuncDecl( attrs )
+				_module.InsertDecl ParseClassDecl(attrs)
+			'note:Change parser so that it recognizes the new keyword
+			Case "function", "dllfunction"
+				_module.InsertDecl ParseFuncDecl(attrs)
 			Default
 				Err "Syntax error - expecting declaration."
 			End Select

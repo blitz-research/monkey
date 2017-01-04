@@ -13,7 +13,9 @@ Const DECL_FINAL=		$000800
 Const DECL_PROTECTED=	$004000
 
 Const CLASS_INTERFACE=	$001000
-Const CLASS_THROWABLE=	$002000
+Const CLASS_THROWABLE = $002000
+'note:introduce a new flag for dll functions so that they can be disguised from a regular functions
+Const DECL_LIBRARY = $004000
 
 Const DECL_SEMANTED=	$100000
 Const DECL_SEMANTING=	$200000
@@ -58,6 +60,11 @@ Class Decl
 	Method ToString$()
 		If ClassDecl( scope ) Return scope.ToString()+"."+ident
 		Return ident
+	End
+	
+	'note:Introduced a new method to check if a function is a dllfunction
+	Method IsLibrary()
+		Return (attrs & DECL_LIBRARY) <> 0
 	End
 	
 	Method IsExtern()
@@ -204,7 +211,7 @@ Class Decl
 					AppScope.semanted.AddLast Self
 					AppScope.allSemantedDecls.AddLast Self
 				Endif
-			
+
 			Endif
 			
 			PopEnv
@@ -1096,7 +1103,7 @@ Class ClassDecl Extends ScopeDecl
 	
 	'Ok, this dodgy looking beast 'resurrects' methods that may not currently be alive, but override methods that ARE.
 	Method UpdateLiveMethods()
-	
+		
 		If IsFinalized() Return
 	
 		If IsInterface() Return
@@ -1480,6 +1487,8 @@ Class AppDecl Extends ScopeDecl
 		Endif
 		
 		FinalizeClasses
+		'note:Block deadcode elimination for dll functions
+		ResurrectDllFunctions
 	End
 	
 	Method FinalizeClasses()
@@ -1499,4 +1508,15 @@ Class AppDecl Extends ScopeDecl
 		Next
 	End
 	
+	'note: Resurrects DLL functions so that they don't need to be called from within Main() to be exported
+	Method ResurrectDllFunctions()
+		imported.Insert("__ResurrectDllFunctions__", mainModule)
+		For Local modules:ModuleDecl = EachIn imported.Values
+			For Local decl:FuncDecl = EachIn modules.FuncDecls
+				If decl.IsSemanted() Then Continue
+				If decl.IsLibrary() Then decl.Semant()
+			Next
+		Next
+		imported.Remove("__ResurrectDllFunctions__")
+	End
 End
