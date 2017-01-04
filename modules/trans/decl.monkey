@@ -554,6 +554,8 @@ Public
 		Next
 		
 		Local match:FuncDecl,isexact,err$
+		Local bestChoice:FuncDecl = Null
+		Local highestAccuracy:Int = 0
 
 		For Local func:FuncDecl=Eachin funcs
 '			If Not func.CheckAccess() Continue
@@ -564,6 +566,8 @@ Public
 			
 			Local exact=True
 			Local possible=True
+			
+			Local accuracy:Int
 			
 			For Local i=0 Until argDecls.Length
 
@@ -576,7 +580,24 @@ Public
 					
 					exact=False
 					
-					If Not explicit And exprTy.ExtendsType( declTy ) Continue
+					If Not explicit And exprTy.ExtendsType( declTy )
+						Local exprobjTy:= ObjectType(exprTy)
+						Local declobjTy:= ObjectType(declTy)
+						
+						If exprobjTy And declobjTy
+							If exprobjTy.classDecl And exprobjTy.classDecl.ExtendsClass( declobjTy.classDecl )
+								' By having a higher number here than the one below, objects are valued higher
+								' than other types in cases of ambiguity.
+								accuracy += 2
+							Endif
+						Else
+							' The higher this is, the more we prefer conversion via 'ToBlah'
+							' rather than directly using an object (As usually intended).
+							accuracy += 1
+						Endif
+						
+						Continue
+					Endif
 
 				Else If argDecls[i].init
 				
@@ -585,10 +606,23 @@ Public
 				Endif
 			
 				possible=False
+				
 				Exit
 			Next
 			
 			If Not possible Continue
+			
+			If highestAccuracy <> -1
+				If accuracy > highestAccuracy
+					highestAccuracy = accuracy
+					
+					bestChoice = func
+				Elseif accuracy = highestAccuracy
+					highestAccuracy = -1
+					
+					bestChoice = Null
+				Endif
+			Endif
 			
 			If exact
 				If isexact
@@ -600,8 +634,12 @@ Public
 				Endif
 			Else
 				If Not isexact
-					If match 
-						err="Unable to determine overload to use: "+match.ToString()+" or "+func.ToString()+"."
+					If match
+						If Not bestChoice
+							err="Unable to determine overload to use: "+match.ToString()+" or "+func.ToString()+"."
+						Else
+							match = bestChoice
+						Endif
 					Else
 						match=func
 					Endif
