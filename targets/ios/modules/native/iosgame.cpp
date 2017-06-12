@@ -1,6 +1,17 @@
 
 //***** monkeygame.h *****
 
+class IosAppDelegate {
+public:
+	virtual void applicationWillResignActive(UIApplication *application) {};
+	virtual void applicationDidBecomeActive(UIApplication *application) {};
+	virtual void applicationDidEnterBackground(UIApplication *application) {};
+	virtual void applicationWillEnterForeground(UIApplication *application) {};
+	virtual void applicationWillTerminate(UIApplication *application) {};
+	virtual bool openURL(NSURL *url, NSString *sourceApplication) { return true; };
+    virtual void didReceiveLocalNotification(UILocalNotification *notification) {};
+};
+
 class BBIosGame : public BBGame{
 public:
 	BBIosGame();
@@ -25,6 +36,10 @@ public:
 	
 	virtual BBMonkeyAppDelegate *GetUIAppDelegate();
 	
+	virtual void AddIosAppDelegate(IosAppDelegate *appDelegate);
+	virtual void RemoveIosAppDelegate(IosAppDelegate *appDelegate);
+	virtual NSMutableArray *GetIosAppDelegates();
+	
 	//***** INTERNAL *****
 	
 	virtual void StartGame();
@@ -42,6 +57,7 @@ protected:
 	
 	UIApplication *_app;
 	BBMonkeyAppDelegate *_appDelegate;
+	NSMutableArray *_iOSappDelegates;
 	
 	bool _displayLinkAvail;
 	UIAccelerometer *_accelerometer;
@@ -79,7 +95,8 @@ _displayLink( 0 ){
 	
 	_app=[UIApplication sharedApplication];
 	_appDelegate=(BBMonkeyAppDelegate*)[_app delegate];
-	
+	_iOSappDelegates = [[NSMutableArray array] retain];
+
 	NSString *reqSysVer=@"3.1";
 	NSString *currSysVer=[[UIDevice currentDevice] systemVersion];
 	if( [currSysVer compare:reqSysVer options:NSNumericSearch]!=NSOrderedAscending ) _displayLinkAvail=true;
@@ -360,6 +377,18 @@ AVAudioPlayer *BBIosGame::OpenAudioPlayer( String path ){
 
 BBMonkeyAppDelegate *BBIosGame::GetUIAppDelegate(){
 	return _appDelegate;
+}
+
+void BBIosGame::AddIosAppDelegate(IosAppDelegate *appDelegate) {
+	[_iOSappDelegates addObject:[NSValue valueWithPointer:appDelegate]];
+}
+
+void BBIosGame::RemoveIosAppDelegate(IosAppDelegate *appDelegate) {
+	[_iOSappDelegates removeObject:[NSValue valueWithPointer:appDelegate]];
+}
+
+NSMutableArray *BBIosGame::GetIosAppDelegates() {
+	return _iOSappDelegates;
 }
 
 //***** INTERNAL *****
@@ -690,6 +719,10 @@ void BBIosGame::ViewDisappeared(){
     return mask;
 }
 
+-(NSUInteger)application:(UIApplication*)application supportedInterfaceOrientationsForWindow:(UIWindow*)window {
+    return UIInterfaceOrientationMaskAllButUpsideDown;
+}
+
 @end
 
 //***** BBMonkeyAppDelegate implementation *****
@@ -700,15 +733,61 @@ void BBIosGame::ViewDisappeared(){
 @synthesize view;
 @synthesize viewController;
 @synthesize textField;
+@synthesize localNotification;
 
 -(void)applicationWillResignActive:(UIApplication*)application{
 
 	game->SuspendGame();
+	for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
+		appDelegate->applicationWillResignActive(application);
+	}
 }
 
 -(void)applicationDidBecomeActive:(UIApplication*)application{
 
 	game->ResumeGame();
+	for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
+		appDelegate->applicationDidBecomeActive(application);
+	}
+}
+
+-(void)applicationDidEnterBackground:(UIApplication*)application{
+	for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
+		appDelegate->applicationDidEnterBackground(application);
+	}
+}
+
+-(void)applicationWillEnterForeground:(UIApplication*)application{
+	for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
+		appDelegate->applicationWillEnterForeground(application);
+	}
+}
+
+-(void)applicationWillTerminate:(UIApplication*)application{
+	for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
+		appDelegate->applicationWillTerminate(application);
+	}
+}
+
+-(BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+	bool returnValue = NO;
+	for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+		IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
+		returnValue |= appDelegate->openURL(url, sourceApplication);
+	}
+	return returnValue;
+}
+
+-(void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
+    for (NSValue *appDelegateValue in game->GetIosAppDelegates()) {
+        IosAppDelegate *appDelegate = (IosAppDelegate*)[appDelegateValue pointerValue];
+        appDelegate->didReceiveLocalNotification(notification);
+    }
 }
 
 -(BOOL)textFieldShouldEndEditing:(UITextField*)textField{
