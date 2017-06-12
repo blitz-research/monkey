@@ -82,6 +82,16 @@ Class InputDevice
 		If index>=0 And index<32 Return _touchY[index]
 		Return 0
 	End
+
+	Method TouchForce#( index )
+		If index>=0 And index<32 Return _touchForce[index]
+		Return 0
+	End
+
+	Method TouchMaximumPossibleForce#( index )
+		If index>=0 And index<32 Return _touchMaximumPossibleForce[index]
+		Return 0
+	End
 	
 	Method AccelX#()
 		Return _accelX
@@ -159,12 +169,13 @@ Class InputDevice
 		_touchY[0]=y
 	End
 	
-	Method TouchEvent:Void( event:Int,data:Int,x:Float,y:Float )
+	Method TouchEvent:Void( event:Int,data:Int,x:Float,y:Float, force:Float = 0.0, maximumPossibleForce:Float = 0.0 )
 		Select event
 		Case BBGameEvent.TouchDown
 			KeyEvent BBGameEvent.KeyDown,KEY_TOUCH0+data
 		Case BBGameEvent.TouchUp
 			KeyEvent BBGameEvent.KeyUp,KEY_TOUCH0+data
+			_touchForce[data] = 0
 			Return
 		Case BBGameEvent.TouchMove
 		Default
@@ -172,6 +183,8 @@ Class InputDevice
 		End
 		_touchX[data]=x
 		_touchY[data]=y
+		_touchForce[data] = force
+		_touchMaximumPossibleForce[data] = maximumPossibleForce
 		If data=0
 			_mouseX=x
 			_mouseY=y
@@ -232,6 +245,8 @@ Private
 	Field _mouseY:Float
 	Field _touchX:Float[32]
 	Field _touchY:Float[32]
+	Field _touchForce:Float[32]
+	Field _touchMaximumPossibleForce:Float[32]
 	Field _accelX:Float
 	Field _accelY:Float
 	Field _accelZ:Float

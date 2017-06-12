@@ -20,7 +20,7 @@ public:
 	virtual void RenderGame(){}
 	virtual void KeyEvent( int event,int data ){}
 	virtual void MouseEvent( int event,int data,Float x,Float y ){}
-	virtual void TouchEvent( int event,int data,Float x,Float y ){}
+	virtual void TouchEvent( int event,int data,Float x,Float y,Float force, Float maximumPossibleForce){}
 	virtual void MotionEvent( int event,int data,Float x,Float y,Float z ){}
 	virtual void DiscardGraphics(){}
 };
@@ -88,7 +88,7 @@ public:
 	virtual void RenderGame();
 	virtual void KeyEvent( int ev,int data );
 	virtual void MouseEvent( int ev,int data,float x,float y );
-	virtual void TouchEvent( int ev,int data,float x,float y );
+	virtual void TouchEvent( int ev,int data,float x,float y,float force,float maximumPossibleForce );
 	virtual void MotionEvent( int ev,int data,float x,float y,float z );
 	virtual void DiscardGraphics();
 	
@@ -377,12 +377,12 @@ void BBGame::MouseEvent( int ev,int data,float x,float y ){
 	gc_collect();
 }
 
-void BBGame::TouchEvent( int ev,int data,float x,float y ){
+void BBGame::TouchEvent( int ev,int data,float x,float y,float force, float maximumPossibleForce ){
 
 	if( !_started ) return;
 	
 	try{
-		_delegate->TouchEvent( ev,data,x,y );
+		_delegate->TouchEvent( ev,data,x,y,force,maximumPossibleForce );
 	}catch( ThrowableObject *ex ){
 		Die( ex );
 	}
