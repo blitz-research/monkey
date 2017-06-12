@@ -77,7 +77,7 @@ Class XnaBuilder Extends Builder
 				Default
 					Die "Invalid music file type"
 				End
-			Else If MatchPath( r,BINARY_FILES )
+			Else
 					cont.Push "  <ItemGroup>"
 					cont.Push "    <Content Include=~q"+t+"~q>"
 					cont.Push "      <Name>"+f+"</Name>"
