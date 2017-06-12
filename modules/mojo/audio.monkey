@@ -15,6 +15,9 @@ Import audiodevice
 Import data
 
 Global device:AudioDevice
+'0-31 for sounds, 32 for music -> array length = 33
+Global channelVolumes:Float[] = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
 
 Public
 
@@ -70,7 +73,15 @@ Function ChannelState( channel )
 End
 
 Function SetChannelVolume( channel,volume# )
+	'store as current volume (if valid)
+	If channel >= 0 And channel < 32 Then channelVolumes[channel] = volume
 	device.SetVolume channel,volume
+End
+
+Function GetChannelVolume:Float( channel:Int )
+	If channel >= 0 And channel < 32 Then Return channelVolumes[channel]
+	'a not existing channel is silent!
+	Return 0.0
 End
 
 Function SetChannelPan( channel,pan# )
@@ -102,7 +113,13 @@ Function MusicState()
 End
 
 Function SetMusicVolume( volume# )
+	'store as current volume
+	channelVolumes[32] = volume
 	device.SetMusicVolume volume
+End
+
+Function GetMusicVolume:Float()
+	Return channelVolumes[32]
 End
 
 #Endif
