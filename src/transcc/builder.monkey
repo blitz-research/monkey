@@ -52,7 +52,10 @@ Class Builder
 
 		Print "Parsing..."
 		
-		SetConfigVar "HOST",ENV_HOST
+		Local host:String=tcc.opt_host
+		If host.Length<=0 host = ENV_HOST
+		
+		SetConfigVar "HOST",host
 		SetConfigVar "LANG",ENV_LANG
 		SetConfigVar "TARGET",ENV_TARGET
 		SetConfigVar "CONFIG",ENV_CONFIG
