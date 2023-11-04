@@ -1,3 +1,6 @@
+This is an archived repository of the original 32bit Monkey source code.
+
+This code is no longer actively maintained, but Monkey lives on at https://www.cerberus-x.com
 
 Release notes:
 
