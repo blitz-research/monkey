@@ -141,6 +141,14 @@ Class Map<K,V>
 		Return node
 	End
 	
+	Method Clone(from:Map<K, V>)
+		If Not from.root
+			root = Null
+			Return
+		EndIf
+		root = from.root.Copy(Null)
+	End
+	
 	'Deprecated - use Set
 	Method Insert:Bool( key:K,value:V )
 		Return Set( key,value )
