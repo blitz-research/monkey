@@ -95,6 +95,7 @@ class BBIosGame;
 	MonkeyViewController *viewController;
 	UITextField *textField;
 	int textFieldState;
+    UILocalNotification *localNotification;
 }
 -(void)applicationWillResignActive:(UIApplication*)application;
 -(void)applicationDidBecomeActive:(UIApplication*)application;
@@ -108,6 +109,7 @@ class BBIosGame;
 @property (nonatomic, retain) IBOutlet MonkeyView *view;
 @property (nonatomic, retain) IBOutlet MonkeyViewController *viewController;
 @property (nonatomic, retain) IBOutlet UITextField *textField;
+@property (nonatomic, retain) IBOutlet UILocalNotification *localNotification;
 
 @end
 
