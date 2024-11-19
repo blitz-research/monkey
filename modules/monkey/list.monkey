@@ -340,6 +340,10 @@ Class Enumerator<T>
 		Return data
 	End
 
+	 Method Reset:Void()
+		_curr = _list._head._succ
+	 End
+ 
 Private
 	
 	Field _list:List<T>
